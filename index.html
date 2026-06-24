@@ -1,98 +1,115 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <!-- Correct viewport meta -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lizzy's Clothing Store</title>
 
-<meta charset="UTF-8">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Custom CSS -->
+  <style>
+    /* Hero animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-fade {
+      animation: fadeIn 2s ease-in-out;
+    }
+    .animate-slide {
+      animation: slideUp 2s ease-in-out;
+    }
 
-<title>My Clothing store</title>
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Custom CSS -->
+    /* Image hover zoom */
+    .zoom-img {
+      transition: transform 0.4s ease;
+    }
+    .zoom-img:hover {
+      transform: scale(1.05);
+    }
 
-<link rel="stylesheet" href="styles.css">
+    /* Card bounce animation */
+    @keyframes bounceIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    .animate-bounce {
+      animation: bounceIn 1s ease;
+    }
+  </style>
 </head>
 
-<body>
-<!-- Your content goes here -->
+<body style="background-color:#f4f4f9;">
 
-<!-- Bootstrap JS and dependencies -->
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-</body>
-
-
-<h1>Welcome to LIZZY'S CLOTHING STORE!</h1>
-
-<header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">My Website</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about.html">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="service.html">Service</a>
-                        </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="cart.html">Cart</a>
-                        </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="shop.html">Shop</a>
-                        </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contact.html">Contact</a>
-                        </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="feedback.html">Feedback</a>
-                        </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
-
-
-<main class="container my-5">
-    <div class="row">
-        <div class="col-md-8">
-            
-            <p>This is a simple webpage advertising clothes for sale.</p>
-            
-            <img src="closet.jpg" alt="A clothing store" class="img-fluid rounded">
-            <p class="mt-3">Visit <a href="shop.html">Shop</a> to see more available clothing.</p>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Did You Know?</h5>
-                    <p class="card-text">You can get a 15% discount if you purchase clothing that exceeds P1 500.</p>
-                </div>
-            </div>
-        </div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">Lizzy's Clothing Store</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="service.html">Service</a></li>
+          <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="feedback.html">Feedback</a></li>
+        </ul>
+      </div>
     </div>
-</main>
+  </nav>
 
+  <!-- Hero Section with animation -->
+  <header class="bg-primary text-white text-center py-5">
+    <div class="container">
+      <h1 class="fw-bold animate-fade">Welcome to Lizzy's Clothing Store!</h1>
+      <p class="lead animate-slide">Trendy fashion, great deals, and fast delivery</p>
+    </div>
+  </header>
 
-<footer>
+  <!-- Main Content -->
+  <main class="container my-5">
+    <div class="row">
+      <!-- Left Column -->
+      <div class="col-md-8">
+        <p class="fs-5">This is a simple webpage advertising clothes for sale.</p>
+        <img src="closet.jpg" alt="A clothing store" class="img-fluid rounded shadow-sm zoom-img">
+        <p class="mt-3">Visit our <a href="shop.html" class="text-decoration-none fw-bold">Shop</a> to see more available clothing.</p>
+      </div>
 
-<p>&copy; 2025 Lizzy Magano</p>
+      <!-- Right Column -->
+      <div class="col-md-4">
+        <div class="card shadow-sm animate-bounce">
+          <div class="card-body">
+            <h5 class="card-title">💡 Did You Know?</h5>
+            <p class="card-text">You can get a <strong>15% discount</strong> if you purchase clothing that exceeds <strong>P1,500</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 
-</footer>
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-5">
+    <p class="mb-0">&copy; 2025 Lizzy Magano</p>
+  </footer>
 
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
+
 
 
