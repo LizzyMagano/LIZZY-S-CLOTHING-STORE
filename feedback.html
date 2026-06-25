@@ -189,18 +189,6 @@
     <!-- ===== MAIN FEEDBACK FORM ===== -->
     <form action="Thanks.html" method="get" id="feedbackForm">
 
-        <!-- Full name -->
-        <div class="form-group">
-            <label for="fullName">Full name <span class="optional-badge">optional</span></label>
-            <input type="text" id="fullName" name="fullname" placeholder="e.g. Thabo Molefe">
-        </div>
-
-        <!-- Email (optional) -->
-        <div class="form-group">
-            <label for="emailAddr">Email address <span class="optional-badge">optional</span></label>
-            <input type="email" id="emailAddr" name="email" placeholder="you@example.com">
-        </div>
-
         <!-- Rating (star system) -->
         <div class="form-group">
             <label>How would you rate your experience?</label>
@@ -265,23 +253,7 @@
         <p class="note">You'll be redirected to a thank-you page after submitting.</p>
     </form>
 
-    <!-- ===== SECOND FORM (action="action_page.php") ===== -->
-    <!-- Kept separate as per your original snippet, but purely feedback oriented -->
-    <hr class="hr-divider">
-    <form action="action_page.php" method="post" style="margin-top: 0.2rem;">
-        <fieldset>
-            <legend>📋 Quick feedback (PHP)</legend>
-            <div class="form-group">
-                <label for="quickName">Your name</label>
-                <input type="text" id="quickName" name="name" value="Mickey">
-            </div>
-            <div class="form-group">
-                <label for="quickComment">Comment</label>
-                <input type="text" id="quickComment" name="comment" value="Loved the service!">
-            </div>
-            <button type="submit" class="btn-submit" style="background: #0b5e42;">➡️ Submit to PHP</button>
-        </fieldset>
-    </form>
+    
 
     <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 1.2rem; text-align: center;">
         All feedback is confidential and helps us serve you better.
