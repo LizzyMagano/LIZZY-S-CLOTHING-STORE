@@ -24,12 +24,6 @@
       right: 20px;
       z-index: 9999;
     }
-    .badge-supabase {
-      background: #3b82f6;
-      color: white;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
     .modal-content {
       border-radius: 1.25rem;
     }
@@ -54,14 +48,6 @@
     }
     .btn-success:hover {
       background: #15803d;
-    }
-    .config-hint {
-      font-size: 0.8rem;
-      color: #64748b;
-      background: #f1f5f9;
-      padding: 0.3rem 0.8rem;
-      border-radius: 30px;
-      display: inline-block;
     }
   </style>
 </head>
@@ -92,10 +78,7 @@
 
   <!-- SHOP GRID -->
   <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-      <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
-      <span class="badge badge-supabase p-2"><i class="fas fa-database me-1"></i> Supabase · <span id="tableNameDisplay">shop_orders</span></span>
-    </div>
+    <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
     <div id="shop" class="row"></div>
   </div>
 
@@ -133,9 +116,6 @@
             </div>
             <input type="hidden" id="buyProductId" value="" />
           </form>
-          <div class="small text-muted mt-2">
-            <i class="fas fa-table me-1"></i>Table: <strong id="modalTableName">shop_orders</strong>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -161,14 +141,12 @@
   <!-- ========== SUPABASE + CONFIG ========== -->
   <script type="module">
     // ============================================================
-    //  🔧  SUPABASE CONFIGURATION (same as login page)
+    //  🔧  SUPABASE CONFIGURATION
     // ============================================================
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
-
-    // 👇 DIFFERENT TABLE for shop orders (create this in your Supabase)
     const ORDERS_TABLE = 'shop_orders';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -212,7 +190,7 @@
       showToast(`🛒 "${product.name}" added to cart!`);
     }
 
-    // ========== SUPABASE INSERT (uses ORDERS_TABLE) ==========
+    // ========== SUPABASE INSERT ==========
     async function saveOrderToSupabase(orderData) {
       const url = `${SUPABASE_URL}/rest/v1/${ORDERS_TABLE}`;
       try {
@@ -254,7 +232,7 @@
       document.getElementById('buyService').value = '';
     }
 
-    // ---------- CONFIRM BUY (inserts into Supabase) ----------
+    // ---------- CONFIRM BUY ----------
     async function confirmBuy() {
       const productId = document.getElementById('buyProductId').value;
       const product = products.find(p => p.id == productId);
@@ -325,10 +303,6 @@
     }
 
     // ---------- INIT ----------
-    // Display the table name in UI
-    document.getElementById('tableNameDisplay').textContent = ORDERS_TABLE;
-    document.getElementById('modalTableName').textContent = ORDERS_TABLE;
-
     renderProducts();
     updateCartButton();
 
@@ -342,4 +316,4 @@
     window.showToast = showToast;
   </script>
 </body>
-                                 </html>
+</html>
