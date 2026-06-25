@@ -2,19 +2,21 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop - Lizzy's Clothing Store</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop · Lizzy's Clothing Store</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
     body {
-      background-color: #f4f4f9;
+      background: #f4f6fa;
     }
     .card-img-top {
       height: 220px;
       object-fit: cover;
-      background-color: #e9ecef;
+      background: #e9ecef;
     }
     .toast-container {
       position: fixed;
@@ -22,25 +24,51 @@
       right: 20px;
       z-index: 9999;
     }
-    /* Buy Now form modal tweaks */
+    .badge-supabase {
+      background: #3b82f6;
+      color: white;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
     .modal-content {
-      border-radius: 1rem;
+      border-radius: 1.25rem;
     }
     .modal-header {
-      background-color: #212529;
+      background: #1e293b;
       color: white;
-      border-top-left-radius: 1rem;
-      border-top-right-radius: 1rem;
+      border-radius: 1.25rem 1.25rem 0 0;
     }
     .modal-header .btn-close {
       filter: brightness(0) invert(1);
+    }
+    .btn-primary {
+      background: #2563eb;
+      border: none;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+    .btn-success {
+      background: #16a34a;
+      border: none;
+    }
+    .btn-success:hover {
+      background: #15803d;
+    }
+    .config-hint {
+      font-size: 0.8rem;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 0.3rem 0.8rem;
+      border-radius: 30px;
+      display: inline-block;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Navbar -->
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <a class="navbar-brand fw-bold" href="index.html">Lizzy's Clothing Store</a>
@@ -57,26 +85,30 @@
           <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
           <li class="nav-item"><a class="nav-link" href="feedback.html">Feedback</a></li>
         </ul>
-        <button id="toggleCart" class="btn btn-success ms-3" onclick="window.location.href='cart.html'">View Cart (0)</button>
+        <button id="toggleCart" class="btn btn-success ms-3" onclick="window.location.href='cart.html'">🛒 Cart (0)</button>
       </div>
     </div>
   </nav>
 
-  <!-- Shop Grid -->
+  <!-- SHOP GRID -->
   <div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+      <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
+      <span class="badge badge-supabase p-2"><i class="fas fa-database me-1"></i> Supabase · <span id="tableNameDisplay">shop_orders</span></span>
+    </div>
     <div id="shop" class="row"></div>
   </div>
 
-  <!-- Buy Now Modal (color, size, service) -->
+  <!-- BUY NOW MODAL -->
   <div class="modal fade" id="buyNowModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">🛒 Buy Now</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title"><i class="fas fa-shopping-bag me-2"></i>Buy Now</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div id="buyNowProductInfo" class="mb-3 fw-bold">Product: </div>
+          <div id="buyNowProductInfo" class="fw-bold mb-3 p-2 bg-light rounded">Product: </div>
           <form id="buyNowForm">
             <div class="mb-3">
               <label for="buyColor" class="form-label">Color</label>
@@ -99,32 +131,50 @@
                 <option value="Express">⚡ Express</option>
               </select>
             </div>
-            <input type="hidden" id="buyProductId" value="">
+            <input type="hidden" id="buyProductId" value="" />
           </form>
+          <div class="small text-muted mt-2">
+            <i class="fas fa-table me-1"></i>Table: <strong id="modalTableName">shop_orders</strong>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="confirmBuyBtn" class="btn btn-success">✅ Place Order</button>
+          <button type="button" id="confirmBuyBtn" class="btn btn-success"><i class="fas fa-check-circle me-1"></i>Place Order</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast container -->
+  <!-- TOAST -->
   <div class="toast-container">
-    <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert">
       <div class="d-flex">
-        <div class="toast-body" id="toastMessage">✅ Order placed successfully!</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <div class="toast-body" id="toastMessage">✅ Order placed!</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS + Popper -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
-    // -------- PRODUCT DATA --------
+  <!-- ========== SUPABASE + CONFIG ========== -->
+  <script type="module">
+    // ============================================================
+    //  🔧  SUPABASE CONFIGURATION (same as login page)
+    // ============================================================
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
+
+    // 👇 DIFFERENT TABLE for shop orders (create this in your Supabase)
+    const ORDERS_TABLE = 'shop_orders';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ============================================================
+
+    // ---------- PRODUCT DATA (local) ----------
     const products = [
       { id: 1, name: "Evening dress", price: 1000, image: "gown.jpg", colors: ["Red", "Black", "Blue"], sizes: ["S", "M", "L"] },
       { id: 2, name: "Vintage dress", price: 230, image: "dress.jpg", colors: ["Pink", "White"], sizes: ["M", "L"] },
@@ -136,66 +186,136 @@
       { id: 8, name: "Men shorts", price: 300, image: "men shorts.jpg", colors: ["Black", "Blue"], sizes: ["S", "M", "L"] }
     ];
 
-    // -------- CART (localStorage) --------
+    // ---------- CART (localStorage) ----------
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
     function updateCartButton() {
-      document.getElementById("toggleCart").innerText = `View Cart (${cart.length})`;
+      document.getElementById("toggleCart").innerHTML = `🛒 Cart (${cart.length})`;
     }
 
-    // -------- ADD TO CART --------
+    // ---------- TOAST ----------
+    function showToast(msg) {
+      const toastEl = document.getElementById('orderToast');
+      document.getElementById('toastMessage').textContent = msg;
+      const toast = new bootstrap.Toast(toastEl, { delay: 2800 });
+      toast.show();
+    }
+
+    // ---------- ADD TO CART ----------
     function addToCart(id) {
-      const product = products.find((p) => p.id === id);
-      const selectedColor = document.getElementById(`color-${id}`).value;
-      const selectedSize = document.getElementById(`size-${id}`).value;
-      cart.push({ 
-        ...product, 
-        selectedColor, 
-        selectedSize,
-        cartId: Date.now() + Math.random() 
-      });
+      const product = products.find(p => p.id === id);
+      const color = document.getElementById(`color-${id}`).value;
+      const size = document.getElementById(`size-${id}`).value;
+      cart.push({ ...product, selectedColor: color, selectedSize: size, cartId: Date.now() + Math.random() });
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartButton();
       showToast(`🛒 "${product.name}" added to cart!`);
     }
 
-    // -------- TOAST HELPER --------
-    function showToast(message) {
-      const toastEl = document.getElementById('orderToast');
-      const msgEl = document.getElementById('toastMessage');
-      msgEl.textContent = message;
-      const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
-      toast.show();
+    // ========== SUPABASE INSERT (uses ORDERS_TABLE) ==========
+    async function saveOrderToSupabase(orderData) {
+      const url = `${SUPABASE_URL}/rest/v1/${ORDERS_TABLE}`;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify(orderData)
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Supabase error ${response.status}: ${errorText}`);
+        }
+        return await response.json();
+      } catch (err) {
+        console.error('Supabase insert failed:', err);
+        throw err;
+      }
     }
 
-    // -------- RENDER PRODUCTS (with BUY NOW button) --------
-    function renderProducts() {
-      const shop = document.getElementById("shop");
-      shop.innerHTML = "";
-      products.forEach((product) => {
-        const colorOptions = product.colors.map(color => `<option value="${color}">${color}</option>`).join("");
-        const sizeOptions = product.sizes.map(size => `<option value="${size}">${size}</option>`).join("");
+    // ---------- PREPARE BUY NOW MODAL ----------
+    function prepareBuyNow(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      document.getElementById('buyNowProductInfo').innerHTML = `📦 <strong>${product.name}</strong> — P${product.price}`;
+      document.getElementById('buyProductId').value = productId;
 
-        const card = document.createElement("div");
-        card.className = "col-md-4 mb-4";
+      const colorSelect = document.getElementById('buyColor');
+      colorSelect.innerHTML = `<option value="">Select color...</option>`;
+      product.colors.forEach(c => colorSelect.innerHTML += `<option value="${c}">${c}</option>`);
+
+      const sizeSelect = document.getElementById('buySize');
+      sizeSelect.innerHTML = `<option value="">Select size...</option>`;
+      product.sizes.forEach(s => sizeSelect.innerHTML += `<option value="${s}">${s}</option>`);
+
+      document.getElementById('buyService').value = '';
+    }
+
+    // ---------- CONFIRM BUY (inserts into Supabase) ----------
+    async function confirmBuy() {
+      const productId = document.getElementById('buyProductId').value;
+      const product = products.find(p => p.id == productId);
+      if (!product) { showToast('❌ Product not found.'); return; }
+
+      const color = document.getElementById('buyColor').value;
+      const size = document.getElementById('buySize').value;
+      const service = document.getElementById('buyService').value;
+
+      if (!color || !size || !service) {
+        showToast('⚠️ Please select color, size and service.');
+        return;
+      }
+
+      const orderPayload = {
+        product_name: product.name,
+        price: product.price,
+        color: color,
+        size: size,
+        service_method: service,
+        ordered_at: new Date().toISOString(),
+        status: 'pending'
+      };
+
+      try {
+        const result = await saveOrderToSupabase(orderPayload);
+        console.log('Order saved:', result);
+        showToast(`✅ Order placed for "${product.name}"!`);
+        const modal = bootstrap.Modal.getInstance(document.getElementById('buyNowModal'));
+        if (modal) modal.hide();
+      } catch (err) {
+        showToast('❌ Failed to save order. Check console.');
+      }
+    }
+
+    // ---------- RENDER PRODUCTS ----------
+    function renderProducts() {
+      const shop = document.getElementById('shop');
+      shop.innerHTML = '';
+      products.forEach(p => {
+        const colorOpts = p.colors.map(c => `<option value="${c}">${c}</option>`).join('');
+        const sizeOpts = p.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+        const card = document.createElement('div');
+        card.className = 'col-md-4 mb-4';
         card.innerHTML = `
           <div class="card shadow-sm h-100">
-            <img src="${product.image}" class="card-img-top" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
+            <img src="${p.image}" class="card-img-top" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title">${product.name}</h5>
-              <p class="card-text">Price: P${product.price}</p>
+              <h5 class="card-title">${p.name}</h5>
+              <p class="card-text">Price: P${p.price}</p>
               <div class="mb-2">
                 <label class="form-label">Color</label>
-                <select id="color-${product.id}" class="form-select">${colorOptions}</select>
+                <select id="color-${p.id}" class="form-select">${colorOpts}</select>
               </div>
               <div class="mb-2">
                 <label class="form-label">Size</label>
-                <select id="size-${product.id}" class="form-select">${sizeOptions}</select>
+                <select id="size-${p.id}" class="form-select">${sizeOpts}</select>
               </div>
               <div class="mt-auto d-grid gap-2">
-                <button class="btn btn-primary" onclick="addToCart(${product.id})">Add to Cart</button>
-                <!-- BUY NOW button: opens modal -->
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="prepareBuyNow(${product.id})">Buy Now</button>
+                <button class="btn btn-primary" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus me-1"></i>Add to Cart</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="prepareBuyNow(${p.id})"><i class="fas fa-bolt me-1"></i>Buy Now</button>
               </div>
             </div>
           </div>
@@ -204,98 +324,22 @@
       });
     }
 
-    // -------- PREPARE BUY NOW MODAL with product data --------
-    function prepareBuyNow(productId) {
-      const product = products.find(p => p.id === productId);
-      if (!product) return;
+    // ---------- INIT ----------
+    // Display the table name in UI
+    document.getElementById('tableNameDisplay').textContent = ORDERS_TABLE;
+    document.getElementById('modalTableName').textContent = ORDERS_TABLE;
 
-      // Set product info
-      document.getElementById('buyNowProductInfo').innerHTML = `📦 <strong>${product.name}</strong> — P${product.price}`;
-      document.getElementById('buyProductId').value = productId;
-
-      // Populate color dropdown
-      const colorSelect = document.getElementById('buyColor');
-      colorSelect.innerHTML = `<option value="">Select color...</option>`;
-      product.colors.forEach(color => {
-        colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
-      });
-
-      // Populate size dropdown
-      const sizeSelect = document.getElementById('buySize');
-      sizeSelect.innerHTML = `<option value="">Select size...</option>`;
-      product.sizes.forEach(size => {
-        sizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
-      });
-
-      // Reset service dropdown to default
-      document.getElementById('buyService').value = '';
-    }
-
-    // -------- CONFIRM BUY (from modal) -> WhatsApp + toast --------
-    function confirmBuy() {
-      const productId = document.getElementById('buyProductId').value;
-      const product = products.find(p => p.id == productId);
-      if (!product) {
-        showToast('❌ Product not found.');
-        return;
-      }
-
-      const color = document.getElementById('buyColor').value;
-      const size = document.getElementById('buySize').value;
-      const service = document.getElementById('buyService').value;
-
-      if (!color || !size || !service) {
-        showToast('⚠️ Please select color, size and service method.');
-        return;
-      }
-
-      // WhatsApp number (without +)
-      const phone = "78549270";  // <-- your number
-
-      // Build message
-      const message = `🛍️ *New Order!*%0A%0A` +
-                      `📦 Item: ${product.name}%0A` +
-                      `💰 Price: P${product.price}%0A` +
-                      `🎨 Color: ${color}%0A` +
-                      `📏 Size: ${size}%0A` +
-                      `📬 Service: ${service}%0A` +
-                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
-
-      // Open WhatsApp (new tab)
-      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-
-      // Show toast "Order placed"
-      showToast(`✅ Order placed for "${product.name}"! Check WhatsApp.`);
-
-      // Dismiss modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById('buyNowModal'));
-      if (modal) modal.hide();
-
-      // (Optional) add to cart as well? not needed, but we keep it separate.
-    }
-
-    // -------- INITIAL RENDER --------
     renderProducts();
     updateCartButton();
 
-    // -------- ATTACH EVENT TO CONFIRM BUTTON --------
+    // Attach confirmBuy to modal button
     document.getElementById('confirmBuyBtn').addEventListener('click', confirmBuy);
 
-    // Also expose helper for cart.html if needed
+    // Expose functions to global scope (for onclick attributes)
+    window.addToCart = addToCart;
+    window.prepareBuyNow = prepareBuyNow;
+    window.confirmBuy = confirmBuy;
     window.showToast = showToast;
-    window.buyNowFromCart = function(item, color, size, serviceMethod) {
-      // For cart.html compatibility: send WhatsApp from cart
-      const phone = "78549270";
-      const message = `🛍️ *New Order!*%0A%0A` +
-                      `📦 Item: ${item.name}%0A` +
-                      `💰 Price: P${item.price}%0A` +
-                      `🎨 Color: ${color}%0A` +
-                      `📏 Size: ${size}%0A` +
-                      `📬 Service: ${serviceMethod}%0A` +
-                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
-      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-      showToast(`✅ Order placed for "${item.name}"! Check WhatsApp.`);
-    };
   </script>
 </body>
-          </html>
+                                 </html>
