@@ -8,7 +8,6 @@
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Custom CSS (minimal inline for clarity) -->
   <style>
     body {
       background-color: #f4f4f9;
@@ -45,6 +44,15 @@
       background-color: transparent;
       border-top: none;
       padding-top: 0;
+    }
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+    .modal-backdrop {
+      z-index: 1040;
     }
   </style>
 </head>
@@ -92,83 +100,270 @@
     <p class="mb-0">&copy; 2025 Lizzy Magano</p>
   </footer>
 
+  <!-- Toast container for messages -->
+  <div class="toast-container">
+    <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMessage">
+          ✅ Order placed successfully!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buy Modal (appears when user clicks Buy Now) -->
+  <div class="modal fade" id="buyModal" tabindex="-1" aria-labelledby="buyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="buyModalLabel">🛒 Complete Your Purchase</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="buyForm">
+            <!-- Hidden field to store the item index -->
+            <input type="hidden" id="buyItemIndex" value="">
+            
+            <div class="mb-3">
+              <label for="buyColor" class="form-label">🎨 Color</label>
+              <select id="buyColor" class="form-select" required>
+                <option value="">Select color...</option>
+                <option value="Red">Red</option>
+                <option value="Black">Black</option>
+                <option value="Blue">Blue</option>
+                <option value="Pink">Pink</option>
+                <option value="White">White</option>
+                <option value="Yellow">Yellow</option>
+                <option value="Green">Green</option>
+                <option value="Gray">Gray</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="buySize" class="form-label">📏 Size</label>
+              <select id="buySize" class="form-select" required>
+                <option value="">Select size...</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="buyService" class="form-label">📬 Service Method</label>
+              <select id="buyService" class="form-select" required>
+                <option value="">Select service...</option>
+                <option value="Delivery">🚚 Delivery</option>
+                <option value="Pickup">🏪 Pickup</option>
+                <option value="Express">⚡ Express Delivery</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="confirmBuyBtn">✅ Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Cart Logic with Remove & Buy buttons -->
   <script>
-    (function() {
-      // Get cart from localStorage, fallback to empty array
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      const cartItemsDiv = document.getElementById("cart-items");
+    // -------- GLOBAL HELPERS --------
+    function showToast(message) {
+      const toastEl = document.getElementById('orderToast');
+      const msgEl = document.getElementById('toastMessage');
+      msgEl.textContent = message;
+      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+      toast.show();
+    }
 
-      // Helper: save cart to localStorage and re-render
-      function saveAndRender() {
-        localStorage.setItem("cart", JSON.stringify(cart));
-        renderCart();
-      }
+    // WhatsApp number (without +)
+    const WHATSAPP_NUMBER = "26771234567"; // Replace with your number
 
-      // Render function: builds cards with remove & buy buttons
-      function renderCart() {
-        cartItemsDiv.innerHTML = ''; // clear
+    // -------- CART MANAGEMENT --------
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartItemsDiv = document.getElementById("cart-items");
 
-        if (cart.length === 0) {
-          cartItemsDiv.innerHTML = `<p class="text-muted">Your cart is empty. Visit the <a href="shop.html">Shop</a> to add items.</p>`;
-          return;
-        }
-
-        // Loop through cart items and create cards
-        cart.forEach((item, index) => {
-          // Use a unique identifier: if item has id, use it; otherwise use index (fallback)
-          const itemId = item.id !== undefined ? item.id : `item-${index}`;
-          // But for removal we need the index in the current cart array.
-          // We'll pass the index to the remove function.
-          const card = document.createElement("div");
-          card.className = "col-md-4 mb-4";
-          card.innerHTML = `
-            <div class="card shadow-sm h-100">
-              <img src="${item.image || 'https://via.placeholder.com/300x220?text=No+Image'}" class="card-img-top" alt="${item.name || 'Item'}">
-              <div class="card-body">
-                <h5 class="card-title">${item.name || 'Unnamed'}</h5>
-                <p class="card-text">Price: P${item.price !== undefined ? item.price : '0.00'}</p>
-                <p class="card-text">Color: ${item.selectedColor || 'N/A'}</p>
-                <p class="card-text">Size: ${item.selectedSize || 'N/A'}</p>
-              </div>
-              <div class="card-footer d-flex justify-content-between align-items-center action-buttons">
-                <!-- Remove button -->
-                <button class="btn btn-remove btn-sm" data-index="${index}">🗑️ Remove</button>
-                <!-- Buy / Purchase button => redirects to contact.html -->
-                <a href="contact.html" class="btn btn-buy btn-sm">🛒 Buy Now</a>
-              </div>
-            </div>
-          `;
-          cartItemsDiv.appendChild(card);
-        });
-
-        // Attach event listeners to all Remove buttons after DOM update
-        document.querySelectorAll('.btn-remove').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            const idx = parseInt(this.getAttribute('data-index'), 10);
-            if (!isNaN(idx) && idx >= 0 && idx < cart.length) {
-              // Remove item at index
-              cart.splice(idx, 1);
-              saveAndRender(); // update localStorage and re-render
-            } else {
-              alert('Item not found in cart.');
-            }
-          });
-        });
-      }
-
-      // Initial render
+    function saveAndRender() {
+      localStorage.setItem("cart", JSON.stringify(cart));
       renderCart();
+    }
 
-      // (Optional) expose cart for debugging
-      window.cart = cart;
-    })();
+    // -------- RENDER CART --------
+    function renderCart() {
+      cartItemsDiv.innerHTML = '';
+
+      if (cart.length === 0) {
+        cartItemsDiv.innerHTML = `<p class="text-muted">Your cart is empty. Visit the <a href="shop.html">Shop</a> to add items.</p>`;
+        return;
+      }
+
+      cart.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-4";
+        card.innerHTML = `
+          <div class="card shadow-sm h-100">
+            <img src="${item.image || 'https://via.placeholder.com/300x220?text=No+Image'}" class="card-img-top" alt="${item.name || 'Item'}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
+            <div class="card-body">
+              <h5 class="card-title">${item.name || 'Unnamed'}</h5>
+              <p class="card-text">Price: P${item.price !== undefined ? item.price : '0.00'}</p>
+              <p class="card-text">Color: ${item.selectedColor || 'N/A'}</p>
+              <p class="card-text">Size: ${item.selectedSize || 'N/A'}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center action-buttons">
+              <button class="btn btn-remove btn-sm" data-index="${index}">🗑️ Remove</button>
+              <button class="btn btn-buy btn-sm buy-now-btn" data-index="${index}">🛒 Buy Now</button>
+            </div>
+          </div>
+        `;
+        cartItemsDiv.appendChild(card);
+      });
+
+      // Attach remove event listeners
+      document.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const idx = parseInt(this.getAttribute('data-index'), 10);
+          if (!isNaN(idx) && idx >= 0 && idx < cart.length) {
+            cart.splice(idx, 1);
+            saveAndRender();
+            showToast('🗑️ Item removed from cart');
+          }
+        });
+      });
+
+      // Attach buy event listeners
+      document.querySelectorAll('.buy-now-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const idx = parseInt(this.getAttribute('data-index'), 10);
+          if (!isNaN(idx) && idx >= 0 && idx < cart.length) {
+            // Open modal with the item data
+            openBuyModal(idx);
+          }
+        });
+      });
+    }
+
+    // -------- BUY MODAL LOGIC --------
+    let buyModalInstance = null;
+    let currentBuyIndex = -1;
+
+    function openBuyModal(index) {
+      currentBuyIndex = index;
+      const item = cart[index];
+      
+      // Set the hidden field
+      document.getElementById('buyItemIndex').value = index;
+      
+      // Pre-fill color and size options (if available from item)
+      const colorSelect = document.getElementById('buyColor');
+      const sizeSelect = document.getElementById('buySize');
+      
+      // Reset to first option
+      colorSelect.value = '';
+      sizeSelect.value = '';
+      
+      // If item has selectedColor, try to set it
+      if (item.selectedColor) {
+        const colorOption = Array.from(colorSelect.options).find(opt => opt.value === item.selectedColor);
+        if (colorOption) colorSelect.value = item.selectedColor;
+      }
+      
+      if (item.selectedSize) {
+        const sizeOption = Array.from(sizeSelect.options).find(opt => opt.value === item.selectedSize);
+        if (sizeOption) sizeSelect.value = item.selectedSize;
+      }
+      
+      // Show the modal
+      if (!buyModalInstance) {
+        const modalEl = document.getElementById('buyModal');
+        buyModalInstance = new bootstrap.Modal(modalEl);
+      }
+      buyModalInstance.show();
+    }
+
+    // Confirm Buy button in modal
+    document.getElementById('confirmBuyBtn').addEventListener('click', function() {
+      const index = parseInt(document.getElementById('buyItemIndex').value, 10);
+      if (isNaN(index) || index < 0 || index >= cart.length) {
+        showToast('❌ Error: Item not found');
+        return;
+      }
+
+      const item = cart[index];
+      const color = document.getElementById('buyColor').value;
+      const size = document.getElementById('buySize').value;
+      const service = document.getElementById('buyService').value;
+
+      // Validate selections
+      if (!color || !size || !service) {
+        showToast('⚠️ Please select color, size, and service method');
+        return;
+      }
+
+      // Build WhatsApp message
+      const message = `🛍️ *New Order!*%0A%0A` +
+                      `📦 Item: ${item.name}%0A` +
+                      `💰 Price: P${item.price}%0A` +
+                      `🎨 Color: ${color}%0A` +
+                      `📏 Size: ${size}%0A` +
+                      `📬 Service: ${service}%0A` +
+                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
+
+      // Open WhatsApp (new tab)
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+
+      // Close modal
+      if (buyModalInstance) {
+        buyModalInstance.hide();
+      }
+
+      // Remove item from cart after purchase
+      cart.splice(index, 1);
+      saveAndRender();
+
+      // Show success message
+      showToast(`✅ Order placed for "${item.name}"! Check WhatsApp.`);
+    });
+
+    // Close modal on cancel
+    document.querySelector('#buyModal .btn-secondary').addEventListener('click', function() {
+      if (buyModalInstance) {
+        buyModalInstance.hide();
+      }
+    });
+
+    // Also close when X button is clicked
+    document.querySelector('#buyModal .btn-close').addEventListener('click', function() {
+      if (buyModalInstance) {
+        buyModalInstance.hide();
+      }
+    });
+
+    // -------- INITIAL RENDER --------
+    renderCart();
+
+    // Also expose showToast globally so it can be used from shop.html if needed
+    window.showToast = showToast;
+    window.buyNowFromCart = function(item, color, size, serviceMethod) {
+      // This is kept for compatibility with the shop page's buy function
+      const message = `🛍️ *New Order!*%0A%0A` +
+                      `📦 Item: ${item.name}%0A` +
+                      `💰 Price: P${item.price}%0A` +
+                      `🎨 Color: ${color}%0A` +
+                      `📏 Size: ${size}%0A` +
+                      `📬 Service: ${serviceMethod}%0A` +
+                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+      showToast(`✅ Order placed for "${item.name}"! Check WhatsApp.`);
+    };
   </script>
 
-  <!-- Note: The "Buy Now" button is a link to contact.html, as requested.
-       "Remove" button removes the specific item from cart and updates localStorage. -->
 </body>
-</html>
+    </html>
