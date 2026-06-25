@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shop - Lizzy's Clothing Store</title>
-
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
@@ -22,6 +21,19 @@
       top: 20px;
       right: 20px;
       z-index: 9999;
+    }
+    /* Buy Now form modal tweaks */
+    .modal-content {
+      border-radius: 1rem;
+    }
+    .modal-header {
+      background-color: #212529;
+      color: white;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+    }
+    .modal-header .btn-close {
+      filter: brightness(0) invert(1);
     }
   </style>
 </head>
@@ -55,19 +67,60 @@
     <div id="shop" class="row"></div>
   </div>
 
-  <!-- Toast container for messages -->
+  <!-- Buy Now Modal (color, size, service) -->
+  <div class="modal fade" id="buyNowModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🛒 Buy Now</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="buyNowProductInfo" class="mb-3 fw-bold">Product: </div>
+          <form id="buyNowForm">
+            <div class="mb-3">
+              <label for="buyColor" class="form-label">Color</label>
+              <select id="buyColor" class="form-select" required>
+                <option value="">Select color...</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="buySize" class="form-label">Size</label>
+              <select id="buySize" class="form-select" required>
+                <option value="">Select size...</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="buyService" class="form-label">Service Method</label>
+              <select id="buyService" class="form-select" required>
+                <option value="">Choose service...</option>
+                <option value="Delivery">🚚 Delivery</option>
+                <option value="Pickup">🏪 Pickup</option>
+                <option value="Express">⚡ Express</option>
+              </select>
+            </div>
+            <input type="hidden" id="buyProductId" value="">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmBuyBtn" class="btn btn-success">✅ Place Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
   <div class="toast-container">
     <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
-        <div class="toast-body" id="toastMessage">
-          ✅ Order placed successfully!
-        </div>
+        <div class="toast-body" id="toastMessage">✅ Order placed successfully!</div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
+  <!-- Bootstrap JS + Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
@@ -90,24 +143,19 @@
       document.getElementById("toggleCart").innerText = `View Cart (${cart.length})`;
     }
 
-    // -------- ADD TO CART (from product card) --------
+    // -------- ADD TO CART --------
     function addToCart(id) {
       const product = products.find((p) => p.id === id);
       const selectedColor = document.getElementById(`color-${id}`).value;
       const selectedSize = document.getElementById(`size-${id}`).value;
-
-      // Store the product with selected options
       cart.push({ 
         ...product, 
         selectedColor, 
         selectedSize,
-        // keep a unique id for removal if needed
         cartId: Date.now() + Math.random() 
       });
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartButton();
-
-      // Show a quick toast notification
       showToast(`🛒 "${product.name}" added to cart!`);
     }
 
@@ -120,7 +168,7 @@
       toast.show();
     }
 
-    // -------- RENDER PRODUCTS --------
+    // -------- RENDER PRODUCTS (with BUY NOW button) --------
     function renderProducts() {
       const shop = document.getElementById("shop");
       shop.innerHTML = "";
@@ -133,7 +181,7 @@
         card.innerHTML = `
           <div class="card shadow-sm h-100">
             <img src="${product.image}" class="card-img-top" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
-            <div class="card-body">
+            <div class="card-body d-flex flex-column">
               <h5 class="card-title">${product.name}</h5>
               <p class="card-text">Price: P${product.price}</p>
               <div class="mb-2">
@@ -144,8 +192,11 @@
                 <label class="form-label">Size</label>
                 <select id="size-${product.id}" class="form-select">${sizeOptions}</select>
               </div>
-              <!-- "Add to Cart" button -->
-              <button class="btn btn-primary w-100" onclick="addToCart(${product.id})">Add to Cart</button>
+              <div class="mt-auto d-grid gap-2">
+                <button class="btn btn-primary" onclick="addToCart(${product.id})">Add to Cart</button>
+                <!-- BUY NOW button: opens modal -->
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="prepareBuyNow(${product.id})">Buy Now</button>
+              </div>
             </div>
           </div>
         `;
@@ -153,17 +204,88 @@
       });
     }
 
+    // -------- PREPARE BUY NOW MODAL with product data --------
+    function prepareBuyNow(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      // Set product info
+      document.getElementById('buyNowProductInfo').innerHTML = `📦 <strong>${product.name}</strong> — P${product.price}`;
+      document.getElementById('buyProductId').value = productId;
+
+      // Populate color dropdown
+      const colorSelect = document.getElementById('buyColor');
+      colorSelect.innerHTML = `<option value="">Select color...</option>`;
+      product.colors.forEach(color => {
+        colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
+      });
+
+      // Populate size dropdown
+      const sizeSelect = document.getElementById('buySize');
+      sizeSelect.innerHTML = `<option value="">Select size...</option>`;
+      product.sizes.forEach(size => {
+        sizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
+      });
+
+      // Reset service dropdown to default
+      document.getElementById('buyService').value = '';
+    }
+
+    // -------- CONFIRM BUY (from modal) -> WhatsApp + toast --------
+    function confirmBuy() {
+      const productId = document.getElementById('buyProductId').value;
+      const product = products.find(p => p.id == productId);
+      if (!product) {
+        showToast('❌ Product not found.');
+        return;
+      }
+
+      const color = document.getElementById('buyColor').value;
+      const size = document.getElementById('buySize').value;
+      const service = document.getElementById('buyService').value;
+
+      if (!color || !size || !service) {
+        showToast('⚠️ Please select color, size and service method.');
+        return;
+      }
+
+      // WhatsApp number (without +)
+      const phone = "78549270";  // <-- your number
+
+      // Build message
+      const message = `🛍️ *New Order!*%0A%0A` +
+                      `📦 Item: ${product.name}%0A` +
+                      `💰 Price: P${product.price}%0A` +
+                      `🎨 Color: ${color}%0A` +
+                      `📏 Size: ${size}%0A` +
+                      `📬 Service: ${service}%0A` +
+                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
+
+      // Open WhatsApp (new tab)
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+
+      // Show toast "Order placed"
+      showToast(`✅ Order placed for "${product.name}"! Check WhatsApp.`);
+
+      // Dismiss modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('buyNowModal'));
+      if (modal) modal.hide();
+
+      // (Optional) add to cart as well? not needed, but we keep it separate.
+    }
+
     // -------- INITIAL RENDER --------
     renderProducts();
     updateCartButton();
 
-    // -------- NEW: "BUY NOW" FUNCTION (called from cart.html) --------
-    // This function is placed here so it can be used globally.
-    // It will be called from cart.html after the user selects color, size, service method.
-    // It sends order to WhatsApp and shows "Order placed" message without redirect.
+    // -------- ATTACH EVENT TO CONFIRM BUTTON --------
+    document.getElementById('confirmBuyBtn').addEventListener('click', confirmBuy);
+
+    // Also expose helper for cart.html if needed
+    window.showToast = showToast;
     window.buyNowFromCart = function(item, color, size, serviceMethod) {
-      // Build WhatsApp message
-      const phone = "26773047948"; // Replace with your WhatsApp number (country code without +)
+      // For cart.html compatibility: send WhatsApp from cart
+      const phone = "78549270";
       const message = `🛍️ *New Order!*%0A%0A` +
                       `📦 Item: ${item.name}%0A` +
                       `💰 Price: P${item.price}%0A` +
@@ -171,16 +293,9 @@
                       `📏 Size: ${size}%0A` +
                       `📬 Service: ${serviceMethod}%0A` +
                       `%0AThank you for shopping with Lizzy's Clothing Store!`;
-
-      // Open WhatsApp with the pre-filled message (no redirect, opens in new tab)
       window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-
-      // Show "Order placed" message (toast)
       showToast(`✅ Order placed for "${item.name}"! Check WhatsApp.`);
     };
-
-    // Also expose a function to show toast from cart.html
-    window.showToast = showToast;
   </script>
 </body>
-</html>
+          </html>
