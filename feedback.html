@@ -1,21 +1,207 @@
-<form action="Thanks.html">
-  First name:<br>
-  <input type="text" name="firstname"><br>
-  Last name:<br>
-  <input type="text" name="lastname">
-  <input type="radio" name="gender" value="male" checked> Male<br>
-  <input type="radio" name="gender" value="female"> Female<br>
-  <input type="radio" name="gender" value="other"> Other
-    <form action="action_page.php">
-  <fieldset>
-    <legend>Personal information:</legend>
-    First name:<br>
-    <input type="text" name="firstname" value="Mickey"><br>
-    Last name:<br>
-    <input type="text" name="lastname" value="Mouse"><br><br>
-    <input type="submit" value="Submit">
-  </fieldset>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Feedback Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .form-container {
+            background: white;
+            padding: 2rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            max-width: 520px;
+            width: 100%;
+        }
+        h2 {
+            margin-top: 0;
+            color: #1e293b;
+            border-bottom: 2px solid #e9edf2;
+            padding-bottom: 0.75rem;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #0b1e33;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        input:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+        }
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 0.3rem;
+        }
+        .radio-group label {
+            font-weight: 400;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+        }
+        fieldset {
+            border: 1px solid #d1d9e6;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0 0.5rem;
+        }
+        legend {
+            font-weight: 600;
+            padding: 0 0.5rem;
+            color: #0b1e33;
+        }
+        .btn-submit {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+        .btn-submit:hover {
+            background: #1d4ed8;
+            transform: scale(1.01);
+        }
+        .note {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .inline-label {
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        .hr-divider {
+            border: 0;
+            border-top: 2px dashed #e2e8f0;
+            margin: 1.8rem 0 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>📬 Contact & Feedback</h2>
+    <p style="color: #334155; margin-bottom: 1.8rem;">Please fill in your details below.</p>
+
+    <!-- ====== MAIN FORM (action="Thanks.html") ====== -->
+    <form action="Thanks.html" method="get" id="mainForm">
+
+        <!-- First name -->
+        <div class="form-group">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstname" placeholder="e.g. Thabo" required>
+        </div>
+
+        <!-- Last name -->
+        <div class="form-group">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" name="lastname" placeholder="e.g. Molefe" required>
+        </div>
+
+        <!-- Gender: radio buttons (properly grouped) -->
+        <div class="form-group">
+            <span style="display: block; font-weight: 600; margin-bottom: 0.3rem; color: #0b1e33;">Gender</span>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="gender" value="male" checked> Male
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="female"> Female
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="other"> Other
+                </label>
+            </div>
+        </div>
+
+        <!-- ====== NESTED FIELDSET (extra info) ====== -->
+        <fieldset>
+            <legend>👤 Personal information (optional)</legend>
+
+            <div class="form-group" style="margin-bottom: 0.8rem;">
+                <label for="nickname">First name (nickname)</label>
+                <input type="text" id="nickname" name="firstname_nick" value="Mickey" placeholder="e.g. Mickey">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.8rem;">
+                <label for="surname">Last name (surname)</label>
+                <input type="text" id="surname" name="lastname_nick" value="Mouse" placeholder="e.g. Mouse">
+            </div>
+
+            <!-- additional field inside fieldset (optional) -->
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="emailField">Email (optional)</label>
+                <input type="email" id="emailField" name="email" placeholder="you@example.com">
+            </div>
+        </fieldset>
+
+        <!-- Submit button -->
+        <button type="submit" class="btn-submit">✨ Submit</button>
+        <p class="note">You will be redirected to <strong>Thanks.html</strong> after submission.</p>
+    </form>
+
+    <hr class="hr-divider">
+
+    <!-- ====== SECOND FORM (action="action_page.php") ====== -->
+    <!-- This is the second form from your original snippet, now properly separated -->
+    <form action="action_page.php" method="post" style="margin-top: 0.5rem;">
+        <fieldset>
+            <legend>📋 Alternative form (PHP)</legend>
+            <div class="form-group">
+                <label for="altFirstName">First name</label>
+                <input type="text" id="altFirstName" name="firstname" value="Mickey">
+            </div>
+            <div class="form-group">
+                <label for="altLastName">Last name</label>
+                <input type="text" id="altLastName" name="lastname" value="Mouse">
+            </div>
+            <button type="submit" class="btn-submit" style="background: #0b5e42;">➡️ Submit to PHP</button>
+        </fieldset>
+    </form>
+
+    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1.2rem; text-align: center;">
+        ✅ All forms are now correctly structured with proper labels and actions.
+    </p>
+</div>
+
+</body>
+  </html>
 
 
 
