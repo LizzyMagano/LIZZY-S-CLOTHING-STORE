@@ -173,8 +173,20 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Cart Logic with Remove & Buy buttons -->
-  <script>
+  <!-- Cart Logic with Supabase -->
+  <script type="module">
+    // ============================================================
+    //  🔧  SUPABASE CONFIGURATION (same as shop.html)
+    // ============================================================
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
+    const ORDERS_TABLE = 'shop_orders'; // Same table as shop.html
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ============================================================
+
     // -------- GLOBAL HELPERS --------
     function showToast(message) {
       const toastEl = document.getElementById('orderToast');
@@ -184,9 +196,6 @@
       toast.show();
     }
 
-    // WhatsApp number (without +)
-    const WHATSAPP_NUMBER = "26771234567"; // Replace with your number
-
     // -------- CART MANAGEMENT --------
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const cartItemsDiv = document.getElementById("cart-items");
@@ -194,6 +203,30 @@
     function saveAndRender() {
       localStorage.setItem("cart", JSON.stringify(cart));
       renderCart();
+    }
+
+    // ========== SUPABASE INSERT ==========
+    async function saveOrderToSupabase(orderData) {
+      const url = `${SUPABASE_URL}/rest/v1/${ORDERS_TABLE}`;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify(orderData)
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Supabase error ${response.status}: ${errorText}`);
+        }
+        return await response.json();
+      } catch (err) {
+        console.error('Supabase insert failed:', err);
+        throw err;
+      }
     }
 
     // -------- RENDER CART --------
@@ -243,7 +276,6 @@
         btn.addEventListener('click', function(e) {
           const idx = parseInt(this.getAttribute('data-index'), 10);
           if (!isNaN(idx) && idx >= 0 && idx < cart.length) {
-            // Open modal with the item data
             openBuyModal(idx);
           }
         });
@@ -258,18 +290,14 @@
       currentBuyIndex = index;
       const item = cart[index];
       
-      // Set the hidden field
       document.getElementById('buyItemIndex').value = index;
       
-      // Pre-fill color and size options (if available from item)
       const colorSelect = document.getElementById('buyColor');
       const sizeSelect = document.getElementById('buySize');
       
-      // Reset to first option
       colorSelect.value = '';
       sizeSelect.value = '';
       
-      // If item has selectedColor, try to set it
       if (item.selectedColor) {
         const colorOption = Array.from(colorSelect.options).find(opt => opt.value === item.selectedColor);
         if (colorOption) colorSelect.value = item.selectedColor;
@@ -280,7 +308,6 @@
         if (sizeOption) sizeSelect.value = item.selectedSize;
       }
       
-      // Show the modal
       if (!buyModalInstance) {
         const modalEl = document.getElementById('buyModal');
         buyModalInstance = new bootstrap.Modal(modalEl);
@@ -288,8 +315,8 @@
       buyModalInstance.show();
     }
 
-    // Confirm Buy button in modal
-    document.getElementById('confirmBuyBtn').addEventListener('click', function() {
+    // Confirm Buy button in modal - now uses Supabase
+    document.getElementById('confirmBuyBtn').addEventListener('click', async function() {
       const index = parseInt(document.getElementById('buyItemIndex').value, 10);
       if (isNaN(index) || index < 0 || index >= cart.length) {
         showToast('❌ Error: Item not found');
@@ -301,35 +328,42 @@
       const size = document.getElementById('buySize').value;
       const service = document.getElementById('buyService').value;
 
-      // Validate selections
       if (!color || !size || !service) {
         showToast('⚠️ Please select color, size, and service method');
         return;
       }
 
-      // Build WhatsApp message
-      const message = `🛍️ *New Order!*%0A%0A` +
-                      `📦 Item: ${item.name}%0A` +
-                      `💰 Price: P${item.price}%0A` +
-                      `🎨 Color: ${color}%0A` +
-                      `📏 Size: ${size}%0A` +
-                      `📬 Service: ${service}%0A` +
-                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
+      // Build order payload for Supabase (same structure as shop.html)
+      const orderPayload = {
+        product_name: item.name,
+        price: item.price,
+        color: color,
+        size: size,
+        service_method: service,
+        ordered_at: new Date().toISOString(),
+        status: 'pending'
+      };
 
-      // Open WhatsApp (new tab)
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+      try {
+        // Save to Supabase
+        const result = await saveOrderToSupabase(orderPayload);
+        console.log('Order saved:', result);
+        
+        // Close modal
+        if (buyModalInstance) {
+          buyModalInstance.hide();
+        }
 
-      // Close modal
-      if (buyModalInstance) {
-        buyModalInstance.hide();
+        // Remove item from cart after successful order
+        cart.splice(index, 1);
+        saveAndRender();
+
+        // Show success message
+        showToast(`✅ Order placed for "${item.name}"!`);
+      } catch (err) {
+        showToast('❌ Failed to place order. Please try again.');
+        console.error('Order error:', err);
       }
-
-      // Remove item from cart after purchase
-      cart.splice(index, 1);
-      saveAndRender();
-
-      // Show success message
-      showToast(`✅ Order placed for "${item.name}"! Check WhatsApp.`);
     });
 
     // Close modal on cancel
@@ -339,7 +373,6 @@
       }
     });
 
-    // Also close when X button is clicked
     document.querySelector('#buyModal .btn-close').addEventListener('click', function() {
       if (buyModalInstance) {
         buyModalInstance.hide();
@@ -349,20 +382,8 @@
     // -------- INITIAL RENDER --------
     renderCart();
 
-    // Also expose showToast globally so it can be used from shop.html if needed
+    // Expose functions globally for compatibility
     window.showToast = showToast;
-    window.buyNowFromCart = function(item, color, size, serviceMethod) {
-      // This is kept for compatibility with the shop page's buy function
-      const message = `🛍️ *New Order!*%0A%0A` +
-                      `📦 Item: ${item.name}%0A` +
-                      `💰 Price: P${item.price}%0A` +
-                      `🎨 Color: ${color}%0A` +
-                      `📏 Size: ${size}%0A` +
-                      `📬 Service: ${serviceMethod}%0A` +
-                      `%0AThank you for shopping with Lizzy's Clothing Store!`;
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
-      showToast(`✅ Order placed for "${item.name}"! Check WhatsApp.`);
-    };
   </script>
 
 </body>
