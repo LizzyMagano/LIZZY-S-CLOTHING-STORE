@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,10 +13,9 @@
   <style>
     body {
       background: #f4f6fa;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     }
     .card-img-top {
-      height: 320px;
+      height: 220px;
       object-fit: cover;
       background: #e9ecef;
       width: 100%;
@@ -53,41 +53,9 @@
     }
     .card {
       height: 100%;
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-4px);
     }
     .card-body {
       flex: 1 1 auto;
-    }
-    .card-img-top {
-      min-height: 320px;
-    }
-    .badge-status {
-      font-size: 0.7rem;
-      padding: 4px 10px;
-    }
-    .form-control:focus,
-    .form-select:focus {
-      border-color: #25D366;
-      box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
-    }
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 0.8s ease-in-out infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .btn:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
     }
   </style>
 </head>
@@ -111,19 +79,14 @@
           <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
           <li class="nav-item"><a class="nav-link" href="feedback.html">Feedback</a></li>
         </ul>
-        <button id="toggleCart" class="btn btn-success ms-3" onclick="window.location.href='cart.html'">
-          <i class="fas fa-shopping-cart me-1"></i> Cart (<span id="cartCount">0</span>)
-        </button>
+        <button id="toggleCart" class="btn btn-success ms-3" onclick="window.location.href='cart.html'">🛒 Cart (0)</button>
       </div>
     </div>
   </nav>
 
   <!-- SHOP GRID -->
   <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
-      <span class="badge bg-secondary"><i class="fas fa-box me-1"></i> <span id="productCount">0</span> products</span>
-    </div>
+    <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
     <div id="shop" class="row"></div>
   </div>
 
@@ -132,43 +95,38 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="fas fa-shopping-bag me-2"></i>Place Order</h5>
+          <h5 class="modal-title"><i class="fas fa-shopping-bag me-2"></i>Buy Now</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div id="buyNowProductInfo" class="fw-bold mb-3 p-3 bg-light rounded">
-            <i class="fas fa-tag me-2"></i> Product: <span id="productNameDisplay"></span> — P<span id="productPriceDisplay"></span>
-          </div>
-          <form id="buyNowForm" novalidate>
-            <!-- Customer Details -->
+          <div id="buyNowProductInfo" class="fw-bold mb-3 p-2 bg-light rounded">Product: </div>
+          <form id="buyNowForm">
             <div class="mb-3">
-              <label for="customerName" class="form-label fw-semibold">Your Name <span class="text-danger">*</span></label>
-              <input type="text" id="customerName" class="form-control" placeholder="Enter your full name" required>
+              <label for="customerName" class="form-label">Your Name</label>
+              <input type="text" id="customerName" class="form-control" placeholder="Enter your name" required>
             </div>
             <div class="mb-3">
-              <label for="customerEmail" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+              <label for="customerEmail" class="form-label">Your Email</label>
               <input type="email" id="customerEmail" class="form-control" placeholder="you@example.com" required>
-              <div class="form-text">We'll send order confirmation here.</div>
             </div>
             <div class="mb-3">
-              <label for="customerPhone" class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+              <label for="customerPhone" class="form-label">Phone Number</label>
               <input type="tel" id="customerPhone" class="form-control" placeholder="+267 78 549 270" required>
             </div>
-            <hr>
             <div class="mb-3">
-              <label for="buyColor" class="form-label fw-semibold">Color <span class="text-danger">*</span></label>
+              <label for="buyColor" class="form-label">Color</label>
               <select id="buyColor" class="form-select" required>
                 <option value="">Select color...</option>
               </select>
             </div>
             <div class="mb-3">
-              <label for="buySize" class="form-label fw-semibold">Size <span class="text-danger">*</span></label>
+              <label for="buySize" class="form-label">Size</label>
               <select id="buySize" class="form-select" required>
                 <option value="">Select size...</option>
               </select>
             </div>
             <div class="mb-3">
-              <label for="buyService" class="form-label fw-semibold">Service Method <span class="text-danger">*</span></label>
+              <label for="buyService" class="form-label">Service Method</label>
               <select id="buyService" class="form-select" required>
                 <option value="">Choose service...</option>
                 <option value="Delivery">🚚 Delivery</option>
@@ -181,21 +139,17 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="confirmBuyBtn" class="btn btn-success">
-            <i class="fas fa-check-circle me-1"></i> Place Order
-          </button>
+          <button type="button" id="confirmBuyBtn" class="btn btn-success"><i class="fas fa-check-circle me-1"></i>Place Order</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ORDER CONFIRMATION TOAST -->
+  <!-- TOAST -->
   <div class="toast-container">
-    <div id="orderToast" class="toast align-items-center text-white border-0" role="alert" style="background: #1e293b;">
+    <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert">
       <div class="d-flex">
-        <div class="toast-body" id="toastMessage">
-          <i class="fas fa-check-circle text-success me-2"></i> Order placed successfully!
-        </div>
+        <div class="toast-body" id="toastMessage">✅ Order placed!</div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
@@ -227,17 +181,17 @@
     const EMAILJS_TEMPLATE_ID = 'template_us3d5rc';
 
     // ============================================================
-    //  📦  PRODUCT DATA WITH IMAGE FILENAMES
+    //  📦  PRODUCT DATA
     // ============================================================
     const products = [
-      { id: 1, name: "Evening Dress", price: 1000, image: "gown.jpg", colors: ["Red", "Black", "Blue"], sizes: ["S", "M", "L"] },
-      { id: 2, name: "Vintage Dress", price: 230, image: "dress.jpg", colors: ["Pink", "White"], sizes: ["M", "L"] },
-      { id: 3, name: "Lady Shorts", price: 100, image: "lady shorts.jpg", colors: ["Yellow", "Green"], sizes: ["S", "M"] },
-      { id: 4, name: "Plain T-Shirt", price: 80, image: "tshirt.jpg", colors: ["White", "Gray", "Black"], sizes: ["S", "M", "L", "XL"] },
-      { id: 5, name: "Vintage Skirt", price: 500, image: "skirt.jpg", colors: ["Blue", "Black"], sizes: ["M", "L"] },
-      { id: 6, name: "Lady Suit", price: 1200, image: "lady suit.jpg", colors: ["Blue", "Gray"], sizes: ["L", "XL"] },
-      { id: 7, name: "Men's Suit", price: 900, image: "men suit.jpg", colors: ["Black", "Gray"], sizes: ["M", "L", "XL"] },
-      { id: 8, name: "Men's Shorts", price: 300, image: "men shorts.jpg", colors: ["Black", "Blue"], sizes: ["S", "M", "L"] }
+      { id: 1, name: "Evening dress", price: 1000, image: "gown.jpg", colors: ["Red", "Black", "Blue"], sizes: ["S", "M", "L"] },
+      { id: 2, name: "Vintage dress", price: 230, image: "dress.jpg", colors: ["Pink", "White"], sizes: ["M", "L"] },
+      { id: 3, name: "Lady shorts", price: 100, image: "lady shorts.jpg", colors: ["Yellow", "Green"], sizes: ["S", "M"] },
+      { id: 4, name: "Plain T-shirt", price: 80, image: "tshirt.jpg", colors: ["White", "Gray", "Black"], sizes: ["S", "M", "L", "XL"] },
+      { id: 5, name: "Vintage skirt", price: 500, image: "skirt.jpg", colors: ["Blue", "Black"], sizes: ["M", "L"] },
+      { id: 6, name: "Lady suit", price: 1200, image: "lady suit.jpg", colors: ["Blue", "Gray"], sizes: ["L", "XL"] },
+      { id: 7, name: "Men suits", price: 900, image: "men suit.jpg", colors: ["Black", "Gray"], sizes: ["M", "L", "XL"] },
+      { id: 8, name: "Men shorts", price: 300, image: "men shorts.jpg", colors: ["Black", "Blue"], sizes: ["S", "M", "L"] }
     ];
 
     // ============================================================
@@ -246,18 +200,13 @@
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
     function updateCartButton() {
-      const count = cart.length;
-      document.getElementById('cartCount').textContent = count;
-      document.getElementById('toggleCart').innerHTML = 
-        `<i class="fas fa-shopping-cart me-1"></i> Cart (<span id="cartCount">${count}</span>)`;
+      document.getElementById("toggleCart").innerHTML = `🛒 Cart (${cart.length})`;
     }
 
-    function showToast(msg, isError = false) {
+    function showToast(msg) {
       const toastEl = document.getElementById('orderToast');
-      const toastBody = document.getElementById('toastMessage');
-      toastBody.innerHTML = msg;
-      toastEl.style.background = isError ? '#dc3545' : '#1e293b';
-      const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+      document.getElementById('toastMessage').textContent = msg;
+      const toast = new bootstrap.Toast(toastEl, { delay: 2800 });
       toast.show();
     }
 
@@ -265,18 +214,7 @@
       const product = products.find(p => p.id === id);
       const color = document.getElementById(`color-${id}`).value;
       const size = document.getElementById(`size-${id}`).value;
-      
-      if (!color || !size) {
-        showToast('⚠️ Please select a color and size first.', true);
-        return;
-      }
-      
-      cart.push({ 
-        ...product, 
-        selectedColor: color, 
-        selectedSize: size, 
-        cartId: Date.now() + Math.random() 
-      });
+      cart.push({ ...product, selectedColor: color, selectedSize: size, cartId: Date.now() + Math.random() });
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartButton();
       showToast(`🛒 "${product.name}" added to cart!`);
@@ -335,12 +273,9 @@
     // ============================================================
     async function saveOrderToSupabase(orderData) {
       try {
-        // Remove id field so Supabase auto-generates it
-        const { id, ...orderWithoutId } = orderData;
-        
         const { data, error } = await supabase
           .from(ORDERS_TABLE)
-          .insert([orderWithoutId])
+          .insert([orderData])
           .select();
 
         if (error) throw error;
@@ -357,10 +292,7 @@
     async function confirmBuy() {
       const productId = document.getElementById('buyProductId').value;
       const product = products.find(p => p.id == productId);
-      if (!product) { 
-        showToast('❌ Product not found.', true); 
-        return; 
-      }
+      if (!product) { showToast('❌ Product not found.'); return; }
 
       const customerName = document.getElementById('customerName').value.trim();
       const customerEmail = document.getElementById('customerEmail').value.trim();
@@ -369,29 +301,26 @@
       const size = document.getElementById('buySize').value;
       const service = document.getElementById('buyService').value;
 
-      // Validate
       if (!customerName || !customerEmail || !customerPhone) {
-        showToast('⚠️ Please enter your contact details.', true);
+        showToast('⚠️ Please enter your contact details.');
         return;
       }
 
       if (!customerEmail.includes('@')) {
-        showToast('⚠️ Please enter a valid email address.', true);
+        showToast('⚠️ Please enter a valid email address.');
         return;
       }
 
       if (!color || !size || !service) {
-        showToast('⚠️ Please select color, size and service.', true);
+        showToast('⚠️ Please select color, size and service.');
         return;
       }
 
-      // Disable button
       const confirmBtn = document.getElementById('confirmBuyBtn');
       confirmBtn.disabled = true;
-      confirmBtn.innerHTML = '<span class="loading-spinner"></span> Placing order...';
+      confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing order...';
 
       try {
-        // Build order data - ID will be auto-generated by Supabase
         const orderPayload = {
           customer_name: customerName,
           customer_email: customerEmail,
@@ -405,40 +334,36 @@
           ordered_at: new Date().toISOString()
         };
 
-        // 1. Save to Supabase (ID auto-generated)
         const result = await saveOrderToSupabase(orderPayload);
 
         if (!result.success) {
-          showToast('❌ Failed to save order. Please try again.', true);
+          showToast('❌ Failed to save order. Please try again.');
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Place Order';
+          confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Place Order';
           return;
         }
 
         const savedOrder = result.data[0];
         console.log('✅ Order saved to Supabase with ID:', savedOrder.id);
 
-        // 2. Send order confirmation email
         const emailResult = await sendOrderNotification(savedOrder);
 
         if (emailResult.success) {
-          showToast(`✅ Order placed! Check your email for confirmation.`);
+          showToast(`✅ Order placed for "${product.name}"! Check your email.`);
         } else {
-          showToast(`✅ Order placed! We'll notify you when ready.`);
+          showToast(`✅ Order placed for "${product.name}"! We'll notify you when ready.`);
         }
 
-        // Close modal and reset form
         const modal = bootstrap.Modal.getInstance(document.getElementById('buyNowModal'));
         if (modal) modal.hide();
         document.getElementById('buyNowForm').reset();
 
       } catch (error) {
         console.error('Error placing order:', error);
-        showToast('❌ Error placing order. Please try again.', true);
+        showToast('❌ Error placing order. Please try again.');
       } finally {
-        // Re-enable button
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Place Order';
+        confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Place Order';
       }
     }
 
@@ -448,70 +373,54 @@
     function prepareBuyNow(productId) {
       const product = products.find(p => p.id === productId);
       if (!product) return;
-
-      document.getElementById('productNameDisplay').textContent = product.name;
-      document.getElementById('productPriceDisplay').textContent = product.price;
+      document.getElementById('buyNowProductInfo').innerHTML = `📦 <strong>${product.name}</strong> — P${product.price}`;
       document.getElementById('buyProductId').value = productId;
 
       const colorSelect = document.getElementById('buyColor');
       colorSelect.innerHTML = `<option value="">Select color...</option>`;
-      product.colors.forEach(c => {
-        colorSelect.innerHTML += `<option value="${c}">${c}</option>`;
-      });
+      product.colors.forEach(c => colorSelect.innerHTML += `<option value="${c}">${c}</option>`);
 
       const sizeSelect = document.getElementById('buySize');
       sizeSelect.innerHTML = `<option value="">Select size...</option>`;
-      product.sizes.forEach(s => {
-        sizeSelect.innerHTML += `<option value="${s}">${s}</option>`;
-      });
+      product.sizes.forEach(s => sizeSelect.innerHTML += `<option value="${s}">${s}</option>`);
 
       document.getElementById('buyService').value = '';
     }
 
     // ============================================================
-    //  🎨  RENDER PRODUCTS WITH IMAGES
+    //  🎨  RENDER PRODUCTS
     // ============================================================
     function renderProducts() {
       const shop = document.getElementById('shop');
       shop.innerHTML = '';
-      
       products.forEach(p => {
         const colorOpts = p.colors.map(c => `<option value="${c}">${c}</option>`).join('');
         const sizeOpts = p.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
-        
         const card = document.createElement('div');
         card.className = 'col-md-4 col-lg-3 mb-4';
         card.innerHTML = `
           <div class="card shadow-sm h-100">
-            <img src="${p.image}" class="card-img-top" alt="${p.name}" 
-                 onerror="this.src='https://via.placeholder.com/300x320?text=${encodeURIComponent(p.name)}'">
+            <img src="${p.image}" class="card-img-top" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title">${p.name}</h5>
-              <p class="card-text fw-bold text-success">P${p.price.toFixed(2)}</p>
+              <p class="card-text">Price: P${p.price}</p>
               <div class="mb-2">
-                <label class="form-label small fw-semibold">Color</label>
-                <select id="color-${p.id}" class="form-select form-select-sm">${colorOpts}</select>
+                <label class="form-label">Color</label>
+                <select id="color-${p.id}" class="form-select">${colorOpts}</select>
               </div>
               <div class="mb-2">
-                <label class="form-label small fw-semibold">Size</label>
-                <select id="size-${p.id}" class="form-select form-select-sm">${sizeOpts}</select>
+                <label class="form-label">Size</label>
+                <select id="size-${p.id}" class="form-select">${sizeOpts}</select>
               </div>
               <div class="mt-auto d-grid gap-2">
-                <button class="btn btn-primary btn-sm" onclick="window.addToCart(${p.id})">
-                  <i class="fas fa-cart-plus me-1"></i>Add to Cart
-                </button>
-                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#buyNowModal" 
-                        onclick="window.prepareBuyNow(${p.id})">
-                  <i class="fas fa-bolt me-1"></i>Buy Now
-                </button>
+                <button class="btn btn-primary" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus me-1"></i>Add to Cart</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="prepareBuyNow(${p.id})"><i class="fas fa-bolt me-1"></i>Buy Now</button>
               </div>
             </div>
           </div>
         `;
         shop.appendChild(card);
       });
-      
-      document.getElementById('productCount').textContent = products.length;
     }
 
     // ============================================================
@@ -520,29 +429,13 @@
     renderProducts();
     updateCartButton();
 
-    // Attach confirmBuy to modal button
     document.getElementById('confirmBuyBtn').addEventListener('click', confirmBuy);
 
-    // Enter key support in modal
-    document.getElementById('buyNowForm').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        confirmBuy();
-      }
-    });
-
-    // Expose functions to global scope
     window.addToCart = addToCart;
     window.prepareBuyNow = prepareBuyNow;
     window.confirmBuy = confirmBuy;
     window.showToast = showToast;
-
-    console.log('✅ Shop page loaded!');
-    console.log('📧 EmailJS ready to send order notifications.');
-    console.log('📦 Supabase connected for order storage.');
   </script>
-
 </body>
-</html>
-
+                </html>
                                                                                    </html>
