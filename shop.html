@@ -213,6 +213,12 @@
       const product = products.find(p => p.id === id);
       const color = document.getElementById(`color-${id}`).value;
       const size = document.getElementById(`size-${id}`).value;
+      
+      if (!color || !size) {
+        showToast('⚠️ Please select a color and size first.');
+        return;
+      }
+      
       cart.push({ ...product, selectedColor: color, selectedSize: size, cartId: Date.now() + Math.random() });
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartButton();
@@ -391,7 +397,13 @@
     // ============================================================
     function renderProducts() {
       const shop = document.getElementById('shop');
+      if (!shop) {
+        console.error('Shop element not found!');
+        return;
+      }
+      
       shop.innerHTML = '';
+      
       products.forEach(p => {
         const colorOpts = p.colors.map(c => `<option value="${c}">${c}</option>`).join('');
         const sizeOpts = p.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -412,29 +424,43 @@
                 <select id="size-${p.id}" class="form-select">${sizeOpts}</select>
               </div>
               <div class="mt-auto d-grid gap-2">
-                <button class="btn btn-primary" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus me-1"></i>Add to Cart</button>
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="prepareBuyNow(${p.id})"><i class="fas fa-bolt me-1"></i>Buy Now</button>
+                <button class="btn btn-primary" onclick="window.addToCart(${p.id})"><i class="fas fa-cart-plus me-1"></i>Add to Cart</button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="window.prepareBuyNow(${p.id})"><i class="fas fa-bolt me-1"></i>Buy Now</button>
               </div>
             </div>
           </div>
         `;
         shop.appendChild(card);
       });
+      
+      console.log(`✅ Rendered ${products.length} products`);
     }
 
     // ============================================================
-    //  🚀  INIT
+    //  🚀  INIT - Wait for DOM to be ready
     // ============================================================
-    renderProducts();
-    updateCartButton();
+    function init() {
+      renderProducts();
+      updateCartButton();
+      
+      document.getElementById('confirmBuyBtn').addEventListener('click', confirmBuy);
+      
+      // Expose functions to global scope
+      window.addToCart = addToCart;
+      window.prepareBuyNow = prepareBuyNow;
+      window.confirmBuy = confirmBuy;
+      window.showToast = showToast;
+      
+      console.log('✅ Shop page initialized!');
+    }
 
-    document.getElementById('confirmBuyBtn').addEventListener('click', confirmBuy);
-
-    window.addToCart = addToCart;
-    window.prepareBuyNow = prepareBuyNow;
-    window.confirmBuy = confirmBuy;
-    window.showToast = showToast;
+    // Run when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 </html>
-                                                                                   </html>
+                                                                        
