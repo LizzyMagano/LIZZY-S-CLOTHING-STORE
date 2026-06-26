@@ -303,7 +303,7 @@
         });
 
         var templateParams = {
-          order_id: orderData.id,
+          order_id: orderData.id || 'N/A',
           customer_name: orderData.customer_name,
           customer_email: orderData.customer_email,
           product_name: orderData.product_name,
@@ -331,9 +331,12 @@
     }
 
     // ============================================================
-    //  📥  SAVE ORDER TO SUPABASE
+    //  📥  SAVE ORDER TO SUPABASE - FIXED VERSION
     // ============================================================
     function saveOrderToSupabase(orderData, callback) {
+      // Log what we're sending
+      console.log('📤 Sending to Supabase:', JSON.stringify(orderData));
+
       var url = SUPABASE_URL + '/rest/v1/' + ORDERS_TABLE;
 
       var xhr = new XMLHttpRequest();
@@ -344,15 +347,30 @@
       xhr.setRequestHeader('Prefer', 'return=representation');
 
       xhr.onreadystatechange = function() {
+        console.log('📥 Response readyState:', xhr.readyState, 'status:', xhr.status);
+        
         if (xhr.readyState === 4) {
-          if (xhr.status === 201) {
-            var data = JSON.parse(xhr.responseText);
-            callback({ success: true, data: data });
+          console.log('📥 Response text:', xhr.responseText);
+          
+          if (xhr.status === 200 || xhr.status === 201) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              callback({ success: true, data: data });
+            } catch (e) {
+              console.error('❌ Error parsing response:', e);
+              callback({ success: false, error: 'Invalid response from server' });
+            }
           } else {
-            console.error('Supabase error:', xhr.status, xhr.responseText);
-            callback({ success: false, error: xhr.responseText });
+            var errorMsg = 'Supabase error: ' + xhr.status + ' - ' + xhr.responseText;
+            console.error('❌ ' + errorMsg);
+            callback({ success: false, error: errorMsg });
           }
         }
+      };
+
+      xhr.onerror = function() {
+        console.error('❌ Network error - check your internet connection');
+        callback({ success: false, error: 'Network error - check your internet connection' });
       };
 
       xhr.send(JSON.stringify(orderData));
@@ -388,7 +406,7 @@
         return;
       }
 
-      if (customerEmail.indexOf('@') === -1) {
+      if (customerEmail.indexOf('@') === -1 || customerEmail.indexOf('.') === -1) {
         showToast('⚠️ Please enter a valid email address.', true);
         return;
       }
@@ -402,12 +420,13 @@
       confirmBtn.disabled = true;
       confirmBtn.innerHTML = '<span class="loading-spinner"></span> Placing order...';
 
+      // Build order payload - MATCHES YOUR TABLE EXACTLY
       var orderPayload = {
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone,
         product_name: product.name,
-        price: product.price,
+        price: parseFloat(product.price),
         color: color,
         size: size,
         service_method: service,
@@ -415,16 +434,19 @@
         ordered_at: new Date().toISOString()
       };
 
+      // Save to Supabase
       saveOrderToSupabase(orderPayload, function(result) {
+        console.log('📥 Save result:', result);
+        
         if (!result.success) {
-          showToast('❌ Failed to save order. Please try again.', true);
+          showToast('❌ Failed to save order: ' + (result.error || 'Unknown error'), true);
           confirmBtn.disabled = false;
           confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Place Order';
           return;
         }
 
-        var savedOrder = result.data[0];
-        console.log('✅ Order saved to Supabase with ID:', savedOrder.id);
+        var savedOrder = result.data && result.data.length > 0 ? result.data[0] : orderPayload;
+        console.log('✅ Order saved!', savedOrder);
 
         // Send email notification
         sendOrderNotification(savedOrder);
