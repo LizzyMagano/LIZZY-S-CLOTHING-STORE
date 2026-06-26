@@ -54,6 +54,89 @@
     .modal-backdrop {
       z-index: 1040;
     }
+    .cart-item-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #0d6efd;
+    }
+    .selected-count {
+      font-weight: 600;
+      color: #0d6efd;
+    }
+    .bulk-actions {
+      background: white;
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .bulk-actions .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .bulk-actions .right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-bulk-buy {
+      background: #25D366;
+      border: none;
+      color: white;
+      padding: 8px 24px;
+      border-radius: 60px;
+      font-weight: 600;
+    }
+    .btn-bulk-buy:hover {
+      background: #1da851;
+      color: white;
+    }
+    .btn-select-all {
+      background: #e9ecef;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .btn-select-all:hover {
+      background: #dee2e6;
+    }
+    .cart-item-card {
+      position: relative;
+    }
+    .cart-item-card .checkbox-wrapper {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 5;
+      background: rgba(255,255,255,0.9);
+      padding: 4px 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .card .card-body {
+      padding-top: 8px;
+    }
+    @media (max-width: 576px) {
+      .bulk-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .bulk-actions .left {
+        justify-content: center;
+      }
+      .bulk-actions .right {
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 
@@ -83,15 +166,29 @@
   <!-- Cart Section -->
   <main class="container my-5">
     <h1 class="mb-4">🛍️ Your Clothing Collection</h1>
+
+    <!-- Bulk Actions Bar -->
+    <div id="bulkActions" class="bulk-actions" style="display: none;">
+      <div class="left">
+        <span>Select: </span>
+        <button class="btn-select-all" onclick="selectAllItems()">Select All</button>
+        <button class="btn-select-all" onclick="deselectAllItems()">Deselect All</button>
+        <span class="selected-count" id="selectedCount">0 selected</span>
+      </div>
+      <div class="right">
+        <button class="btn-bulk-buy" onclick="bulkBuy()">
+          <i class="fas fa-shopping-bag me-1"></i> Buy Selected (<span id="bulkCount">0</span>)
+        </button>
+      </div>
+    </div>
+
     <div id="cart-items" class="row g-4"></div>
 
-    <!-- Place Order Section (static) -->
-    <div class="mt-5 text-center">
-      <h2 class="fw-bold">📩 Place Your Order</h2>
-      <p class="fs-5">You can place your order by contacting us directly:</p>
-      <p class="mb-1"><strong>Email:</strong>lizzymagano021@gmail.com</p>
-      <p class="mb-1"><strong>Phone:</strong> +267 78549270</p>
-      <p><strong>WhatsApp:</strong> +267 78549270</p>
+    <!-- Empty Cart Message -->
+    <div id="emptyCart" class="text-center py-5" style="display: none;">
+      <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+      <h4>Your cart is empty</h4>
+      <p class="text-muted">Visit the <a href="shop.html">Shop</a> to add items.</p>
     </div>
   </main>
 
@@ -112,7 +209,7 @@
     </div>
   </div>
 
-  <!-- Buy Modal (appears when user clicks Buy Now) -->
+  <!-- Buy Modal (for individual items) -->
   <div class="modal fade" id="buyModal" tabindex="-1" aria-labelledby="buyModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -122,11 +219,24 @@
         </div>
         <div class="modal-body">
           <form id="buyForm">
-            <!-- Hidden field to store the item index -->
             <input type="hidden" id="buyItemIndex" value="">
-            
+            <input type="hidden" id="buyMode" value="single">
+
             <div class="mb-3">
-              <label for="buyColor" class="form-label">🎨 Color</label>
+              <label for="customerName" class="form-label">👤 Your Name <span class="text-danger">*</span></label>
+              <input type="text" id="customerName" class="form-control" placeholder="Enter your full name" required>
+            </div>
+            <div class="mb-3">
+              <label for="customerEmail" class="form-label">📧 Email Address <span class="text-danger">*</span></label>
+              <input type="email" id="customerEmail" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="mb-3">
+              <label for="customerPhone" class="form-label">📱 Phone Number <span class="text-danger">*</span></label>
+              <input type="tel" id="customerPhone" class="form-control" placeholder="+267 78 549 270" required>
+            </div>
+            <hr>
+            <div class="mb-3">
+              <label for="buyColor" class="form-label">🎨 Color <span class="text-danger">*</span></label>
               <select id="buyColor" class="form-select" required>
                 <option value="">Select color...</option>
                 <option value="Red">Red</option>
@@ -139,9 +249,8 @@
                 <option value="Gray">Gray</option>
               </select>
             </div>
-            
             <div class="mb-3">
-              <label for="buySize" class="form-label">📏 Size</label>
+              <label for="buySize" class="form-label">📏 Size <span class="text-danger">*</span></label>
               <select id="buySize" class="form-select" required>
                 <option value="">Select size...</option>
                 <option value="S">S</option>
@@ -150,9 +259,8 @@
                 <option value="XL">XL</option>
               </select>
             </div>
-            
             <div class="mb-3">
-              <label for="buyService" class="form-label">📬 Service Method</label>
+              <label for="buyService" class="form-label">📬 Service Method <span class="text-danger">*</span></label>
               <select id="buyService" class="form-select" required>
                 <option value="">Select service...</option>
                 <option value="Delivery">🚚 Delivery</option>
@@ -160,11 +268,16 @@
                 <option value="Express">⚡ Express Delivery</option>
               </select>
             </div>
+            <div id="bulkItemsList" class="mb-3" style="display: none;">
+              <label class="form-label fw-bold">📦 Items in this order:</label>
+              <ul id="bulkItemsUl" class="list-unstyled small"></ul>
+              <p class="fw-bold text-success">Total: P<span id="bulkTotalPrice">0.00</span></p>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-success" id="confirmBuyBtn">✅ Buy Now</button>
+          <button type="button" class="btn btn-success" id="confirmBuyBtn">✅ Place Order</button>
         </div>
       </div>
     </div>
@@ -182,7 +295,7 @@
 
     const SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
-    const ORDERS_TABLE = 'shop_orders'; // Same table as shop.html
+    const ORDERS_TABLE = 'shop_orders';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // ============================================================
@@ -192,13 +305,16 @@
       const toastEl = document.getElementById('orderToast');
       const msgEl = document.getElementById('toastMessage');
       msgEl.textContent = message;
-      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+      const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
       toast.show();
     }
 
     // -------- CART MANAGEMENT --------
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const cartItemsDiv = document.getElementById("cart-items");
+    const emptyCartDiv = document.getElementById("emptyCart");
+    const bulkActionsDiv = document.getElementById("bulkActions");
+    let selectedItems = [];
 
     function saveAndRender() {
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -229,20 +345,43 @@
       }
     }
 
+    // ========== SAVE MULTIPLE ORDERS ==========
+    async function saveMultipleOrdersToSupabase(orders) {
+      const results = [];
+      for (const order of orders) {
+        try {
+          const result = await saveOrderToSupabase(order);
+          results.push({ success: true, data: result });
+        } catch (err) {
+          results.push({ success: false, error: err });
+        }
+      }
+      return results;
+    }
+
     // -------- RENDER CART --------
     function renderCart() {
       cartItemsDiv.innerHTML = '';
 
       if (cart.length === 0) {
-        cartItemsDiv.innerHTML = `<p class="text-muted">Your cart is empty. Visit the <a href="shop.html">Shop</a> to add items.</p>`;
+        emptyCartDiv.style.display = 'block';
+        bulkActionsDiv.style.display = 'none';
         return;
       }
 
+      emptyCartDiv.style.display = 'none';
+      bulkActionsDiv.style.display = 'flex';
+      selectedItems = [];
+
       cart.forEach((item, index) => {
         const card = document.createElement("div");
-        card.className = "col-md-4 mb-4";
+        card.className = "col-md-4 mb-4 cart-item-card";
+        card.dataset.index = index;
         card.innerHTML = `
           <div class="card shadow-sm h-100">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" class="cart-item-checkbox" data-index="${index}" onchange="updateSelectedCount()">
+            </div>
             <img src="${item.image || 'https://via.placeholder.com/300x220?text=No+Image'}" class="card-img-top" alt="${item.name || 'Item'}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
             <div class="card-body">
               <h5 class="card-title">${item.name || 'Unnamed'}</h5>
@@ -280,34 +419,80 @@
           }
         });
       });
+
+      updateSelectedCount();
     }
+
+    // -------- SELECTION FUNCTIONS --------
+    window.selectAllItems = function() {
+      document.querySelectorAll('.cart-item-checkbox').forEach(cb => cb.checked = true);
+      updateSelectedCount();
+    };
+
+    window.deselectAllItems = function() {
+      document.querySelectorAll('.cart-item-checkbox').forEach(cb => cb.checked = false);
+      updateSelectedCount();
+    };
+
+    window.updateSelectedCount = function() {
+      const checkboxes = document.querySelectorAll('.cart-item-checkbox');
+      const checked = document.querySelectorAll('.cart-item-checkbox:checked');
+      document.getElementById('selectedCount').textContent = checked.length + ' selected';
+      document.getElementById('bulkCount').textContent = checked.length;
+    };
+
+    // -------- BULK BUY --------
+    window.bulkBuy = function() {
+      const checkedBoxes = document.querySelectorAll('.cart-item-checkbox:checked');
+      if (checkedBoxes.length === 0) {
+        showToast('⚠️ Please select at least one item to buy.');
+        return;
+      }
+
+      const selectedIndices = [];
+      checkedBoxes.forEach(cb => {
+        selectedIndices.push(parseInt(cb.dataset.index, 10));
+      });
+
+      openBulkBuyModal(selectedIndices);
+    };
 
     // -------- BUY MODAL LOGIC --------
     let buyModalInstance = null;
     let currentBuyIndex = -1;
+    let currentBulkIndices = [];
 
     function openBuyModal(index) {
       currentBuyIndex = index;
+      currentBulkIndices = [];
+      document.getElementById('buyMode').value = 'single';
+      document.getElementById('bulkItemsList').style.display = 'none';
+
       const item = cart[index];
-      
       document.getElementById('buyItemIndex').value = index;
-      
+
       const colorSelect = document.getElementById('buyColor');
       const sizeSelect = document.getElementById('buySize');
-      
+
       colorSelect.value = '';
       sizeSelect.value = '';
-      
+
       if (item.selectedColor) {
         const colorOption = Array.from(colorSelect.options).find(opt => opt.value === item.selectedColor);
         if (colorOption) colorSelect.value = item.selectedColor;
       }
-      
+
       if (item.selectedSize) {
         const sizeOption = Array.from(sizeSelect.options).find(opt => opt.value === item.selectedSize);
         if (sizeOption) sizeSelect.value = item.selectedSize;
       }
-      
+
+      // Clear customer fields
+      document.getElementById('customerName').value = '';
+      document.getElementById('customerEmail').value = '';
+      document.getElementById('customerPhone').value = '';
+      document.getElementById('buyService').value = '';
+
       if (!buyModalInstance) {
         const modalEl = document.getElementById('buyModal');
         buyModalInstance = new bootstrap.Modal(modalEl);
@@ -315,54 +500,160 @@
       buyModalInstance.show();
     }
 
-    // Confirm Buy button in modal - now uses Supabase
-    document.getElementById('confirmBuyBtn').addEventListener('click', async function() {
-      const index = parseInt(document.getElementById('buyItemIndex').value, 10);
-      if (isNaN(index) || index < 0 || index >= cart.length) {
-        showToast('❌ Error: Item not found');
-        return;
-      }
+    function openBulkBuyModal(indices) {
+      currentBulkIndices = indices;
+      currentBuyIndex = -1;
+      document.getElementById('buyMode').value = 'bulk';
+      document.getElementById('buyItemIndex').value = '';
+      document.getElementById('bulkItemsList').style.display = 'block';
 
-      const item = cart[index];
+      // Build items list
+      const ul = document.getElementById('bulkItemsUl');
+      ul.innerHTML = '';
+      let total = 0;
+      indices.forEach(idx => {
+        const item = cart[idx];
+        const li = document.createElement('li');
+        li.textContent = `📦 ${item.name} - P${item.price} (${item.selectedColor || 'N/A'}, ${item.selectedSize || 'N/A'})`;
+        ul.appendChild(li);
+        total += item.price;
+      });
+      document.getElementById('bulkTotalPrice').textContent = total.toFixed(2);
+
+      // Clear fields
+      document.getElementById('customerName').value = '';
+      document.getElementById('customerEmail').value = '';
+      document.getElementById('customerPhone').value = '';
+      document.getElementById('buyColor').value = '';
+      document.getElementById('buySize').value = '';
+      document.getElementById('buyService').value = '';
+
+      if (!buyModalInstance) {
+        const modalEl = document.getElementById('buyModal');
+        buyModalInstance = new bootstrap.Modal(modalEl);
+      }
+      buyModalInstance.show();
+    }
+
+    // -------- CONFIRM BUY --------
+    document.getElementById('confirmBuyBtn').addEventListener('click', async function() {
+      const mode = document.getElementById('buyMode').value;
+
+      const customerName = document.getElementById('customerName').value.trim();
+      const customerEmail = document.getElementById('customerEmail').value.trim();
+      const customerPhone = document.getElementById('customerPhone').value.trim();
       const color = document.getElementById('buyColor').value;
       const size = document.getElementById('buySize').value;
       const service = document.getElementById('buyService').value;
 
-      if (!color || !size || !service) {
-        showToast('⚠️ Please select color, size, and service method');
+      // Validate customer details
+      if (!customerName || !customerEmail || !customerPhone) {
+        showToast('⚠️ Please enter your contact details.');
         return;
       }
 
-      // Build order payload for Supabase (same structure as shop.html)
-      const orderPayload = {
-        product_name: item.name,
-        price: item.price,
-        color: color,
-        size: size,
-        service_method: service,
-        ordered_at: new Date().toISOString(),
-        status: 'pending'
-      };
+      if (!customerEmail.includes('@')) {
+        showToast('⚠️ Please enter a valid email address.');
+        return;
+      }
+
+      if (!service) {
+        showToast('⚠️ Please select a service method.');
+        return;
+      }
+
+      const confirmBtn = document.getElementById('confirmBuyBtn');
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing order...';
 
       try {
-        // Save to Supabase
-        const result = await saveOrderToSupabase(orderPayload);
-        console.log('Order saved:', result);
-        
-        // Close modal
-        if (buyModalInstance) {
-          buyModalInstance.hide();
+        let orders = [];
+
+        if (mode === 'single' && currentBuyIndex >= 0) {
+          // Single item
+          const item = cart[currentBuyIndex];
+          if (!color || !size) {
+            showToast('⚠️ Please select color and size.');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '✅ Place Order';
+            return;
+          }
+          orders.push({
+            customer_name: customerName,
+            customer_email: customerEmail,
+            customer_phone: customerPhone,
+            product_name: item.name,
+            price: item.price,
+            color: color,
+            size: size,
+            service_method: service,
+            status: 'pending',
+            ordered_at: new Date().toISOString()
+          });
+        } else if (mode === 'bulk' && currentBulkIndices.length > 0) {
+          // Bulk items - use same color/size for all (or you can customize per item)
+          if (!color || !size) {
+            showToast('⚠️ Please select color and size for all items.');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '✅ Place Order';
+            return;
+          }
+          currentBulkIndices.forEach(idx => {
+            const item = cart[idx];
+            orders.push({
+              customer_name: customerName,
+              customer_email: customerEmail,
+              customer_phone: customerPhone,
+              product_name: item.name,
+              price: item.price,
+              color: color,
+              size: size,
+              service_method: service,
+              status: 'pending',
+              ordered_at: new Date().toISOString()
+            });
+          });
+        } else {
+          showToast('❌ Error: No items selected.');
+          confirmBtn.disabled = false;
+          confirmBtn.innerHTML = '✅ Place Order';
+          return;
         }
 
-        // Remove item from cart after successful order
-        cart.splice(index, 1);
-        saveAndRender();
+        // Save all orders to Supabase
+        const results = await saveMultipleOrdersToSupabase(orders);
+        const successCount = results.filter(r => r.success).length;
 
-        // Show success message
-        showToast(`✅ Order placed for "${item.name}"!`);
+        if (successCount > 0) {
+          // Remove purchased items from cart
+          let indicesToRemove = [];
+          if (mode === 'single' && currentBuyIndex >= 0) {
+            indicesToRemove.push(currentBuyIndex);
+          } else if (mode === 'bulk') {
+            indicesToRemove = currentBulkIndices.sort((a, b) => b - a);
+          }
+
+          // Remove from cart (highest index first)
+          indicesToRemove.forEach(idx => {
+            cart.splice(idx, 1);
+          });
+
+          saveAndRender();
+          showToast(`✅ ${successCount} order(s) placed successfully! Check your email.`);
+
+          if (buyModalInstance) {
+            buyModalInstance.hide();
+          }
+        } else {
+          showToast('❌ Failed to place orders. Please try again.');
+        }
+
       } catch (err) {
-        showToast('❌ Failed to place order. Please try again.');
         console.error('Order error:', err);
+        showToast('❌ Error placing order. Please try again.');
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '✅ Place Order';
       }
     });
 
@@ -382,9 +673,11 @@
     // -------- INITIAL RENDER --------
     renderCart();
 
-    // Expose functions globally for compatibility
+    // Expose functions globally
     window.showToast = showToast;
+    window.updateSelectedCount = updateSelectedCount;
   </script>
 
 </body>
-    </html>
+
+</html>
