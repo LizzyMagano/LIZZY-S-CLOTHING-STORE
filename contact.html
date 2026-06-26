@@ -133,7 +133,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: white;
+      background: #f2f4f8;
       z-index: 99999;
       display: none;
       flex-direction: column;
@@ -164,6 +164,7 @@
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      z-index: 10;
     }
 
     .fullscreen-chat-header .chat-header-left {
@@ -208,85 +209,23 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    /* Chat Messages Area - This is where Tawk.to will live */
+    /* Chat Body - where Tawk.to lives */
     .fullscreen-chat-body {
       flex: 1;
-      background: #f2f4f8;
-      overflow: hidden;
       position: relative;
+      overflow: hidden;
     }
 
-    /* The Tawk.to iframe will fill this container */
+    /* Tawk.to widget container - full size */
     #tawkToContainer {
       width: 100%;
       height: 100%;
       position: relative;
     }
 
-    /* Tawk.to widget inside the fullscreen */
-    #tawkToContainer iframe {
-      width: 100% !important;
-      height: 100% !important;
-      border: none !important;
-    }
-
-    /* Loading overlay */
-    .chat-loading {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #f2f4f8;
-      z-index: 10;
-      transition: opacity 0.5s ease;
-    }
-
-    .chat-loading.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .chat-loading .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e0e5ec;
-      border-top-color: #25D366;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .chat-loading p {
-      margin-top: 16px;
-      color: #6c757d;
-      font-size: 0.95rem;
-    }
-
-    /* Fullscreen Chat Footer */
-    .fullscreen-chat-footer {
-      background: white;
-      padding: 12px 24px;
-      border-top: 1px solid #eef2f7;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      color: #6c757d;
-    }
-
-    .fullscreen-chat-footer i {
-      margin-right: 6px;
+    /* Hide the default Tawk.to bubble when in fullscreen */
+    .tawk-min-container {
+      display: none !important;
     }
 
     @media (max-width: 576px) {
@@ -302,12 +241,6 @@
       }
       .fullscreen-chat-header .chat-title {
         font-size: 0.95rem;
-      }
-      .fullscreen-chat-footer {
-        padding: 10px 16px;
-        font-size: 0.75rem;
-        flex-wrap: wrap;
-        gap: 4px;
       }
     }
   </style>
@@ -462,23 +395,10 @@
       </button>
     </div>
 
-    <!-- Chat Body -->
-    <div class="fullscreen-chat-body">
-      <!-- Loading Spinner -->
-      <div class="chat-loading" id="chatLoading">
-        <div class="spinner"></div>
-        <p>Connecting to chat...</p>
-      </div>
-
+    <!-- Chat Body - Tawk.to will be injected here -->
+    <div class="fullscreen-chat-body" id="fullscreenChatBody">
       <!-- Tawk.to container -->
       <div id="tawkToContainer"></div>
-    </div>
-
-    <!-- Chat Footer -->
-    <div class="fullscreen-chat-footer">
-      <span><i class="fas fa-lock"></i> End-to-end encrypted</span>
-      <span><i class="fas fa-clock"></i> We're here to help!</span>
-      <span><i class="fas fa-shield-alt"></i> Privacy guaranteed</span>
     </div>
   </div>
 
@@ -492,34 +412,49 @@
   <!-- Tawk.to LIVE CHAT SCRIPT                   -->
   <!-- ========================================== -->
   <script type="text/javascript">
+    // Store reference to the original widget position
+    var originalWidgetContainer = null;
+
     var Tawk_API = Tawk_API || {},
       Tawk_LoadStart = new Date();
 
-    // When Tawk.to loads, move it into our container
+    // When Tawk.to loads, capture the widget and move it
     Tawk_API.onLoad = function() {
       console.log('Tawk.to loaded!');
-      // Hide loading spinner
-      document.getElementById('chatLoading').classList.add('hidden');
 
-      // Move Tawk.to widget into our container
+      // Wait for the widget to be fully rendered
       setTimeout(function() {
-        var tawkWidget = document.querySelector('#tawkto-iframe-container');
-        if (tawkWidget) {
-          var container = document.getElementById('tawkToContainer');
-          // Move the iframe into our container
-          var iframe = tawkWidget.querySelector('iframe');
+        // Find the Tawk.to widget container
+        var tawkContainer = document.querySelector('#tawkto-iframe-container');
+        if (tawkContainer) {
+          // Get the iframe
+          var iframe = tawkContainer.querySelector('iframe');
           if (iframe) {
-            container.innerHTML = '';
-            container.appendChild(iframe);
-            // Style the iframe
+            // Move it to our container
+            var targetContainer = document.getElementById('tawkToContainer');
+            // Clear any existing content
+            targetContainer.innerHTML = '';
+            // Append the iframe
+            targetContainer.appendChild(iframe);
+
+            // Make it fill the container
             iframe.style.width = '100%';
             iframe.style.height = '100%';
             iframe.style.border = 'none';
+            iframe.style.position = 'absolute';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+
+            // Hide the original container
+            tawkContainer.style.display = 'none';
+
+            console.log('Tawk.to moved to fullscreen container!');
           }
         }
-      }, 300);
+      }, 500);
     };
 
+    // Load Tawk.to
     (function() {
       var s1 = document.createElement("script"),
         s0 = document.getElementsByTagName("script")[0];
@@ -539,31 +474,31 @@
     const overlay = document.getElementById('fullscreenChatOverlay');
     const startBtn = document.getElementById('startChatBtn');
     const closeBtn = document.getElementById('closeChatBtn');
-    const loading = document.getElementById('chatLoading');
 
     // Open fullscreen chat
     startBtn.addEventListener('click', function() {
       // Show overlay
       overlay.classList.add('active');
 
-      // Show loading
-      loading.classList.remove('hidden');
-
-      // Trigger Tawk.to to open
-      if (typeof Tawk_API !== 'undefined' && Tawk_API.toggle) {
-        Tawk_API.toggle();
-      }
-
-      // Hide loading after a few seconds (fallback)
+      // Wait a moment then open Tawk.to
       setTimeout(function() {
-        loading.classList.add('hidden');
-      }, 3000);
+        if (typeof Tawk_API !== 'undefined') {
+          // Toggle the chat widget
+          if (Tawk_API.toggle) {
+            Tawk_API.toggle();
+          }
+          // Maximize it if possible
+          if (Tawk_API.maximize) {
+            Tawk_API.maximize();
+          }
+        }
+      }, 300);
     });
 
     // Close fullscreen chat
     closeBtn.addEventListener('click', function() {
       overlay.classList.remove('active');
-      // Close Tawk.to widget
+      // Minimize Tawk.to widget
       if (typeof Tawk_API !== 'undefined' && Tawk_API.minimize) {
         Tawk_API.minimize();
       }
