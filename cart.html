@@ -8,6 +8,8 @@
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     body {
       background-color: #f4f4f9;
@@ -67,19 +69,20 @@
     .bulk-actions {
       background: white;
       border-radius: 12px;
-      padding: 16px 20px;
+      padding: 12px 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       margin-bottom: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
     .bulk-actions .left {
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
     .bulk-actions .right {
       display: flex;
@@ -124,6 +127,36 @@
     }
     .card .card-body {
       padding-top: 8px;
+    }
+    .dropdown-select-all {
+      background: #e9ecef;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .dropdown-select-all:hover {
+      background: #dee2e6;
+    }
+    .dropdown-select-all:focus {
+      outline: none;
+    }
+    .bulk-items-list {
+      max-height: 150px;
+      overflow-y: auto;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .bulk-items-list .item-row {
+      padding: 4px 0;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 0.9rem;
+    }
+    .bulk-items-list .item-row:last-child {
+      border-bottom: none;
     }
     @media (max-width: 576px) {
       .bulk-actions {
@@ -171,8 +204,18 @@
     <div id="bulkActions" class="bulk-actions" style="display: none;">
       <div class="left">
         <span>Select: </span>
-        <button class="btn-select-all" onclick="selectAllItems()">Select All</button>
-        <button class="btn-select-all" onclick="deselectAllItems()">Deselect All</button>
+        
+        <!-- Select All Dropdown -->
+        <div class="dropdown">
+          <button class="dropdown-select-all" id="selectDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-check-double me-1"></i> Select
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="selectDropdown">
+            <li><a class="dropdown-item" href="#" onclick="selectAllItems()">✅ Select All</a></li>
+            <li><a class="dropdown-item" href="#" onclick="deselectAllItems()">❌ Deselect All</a></li>
+          </ul>
+        </div>
+
         <span class="selected-count" id="selectedCount">0 selected</span>
       </div>
       <div class="right">
@@ -209,9 +252,9 @@
     </div>
   </div>
 
-  <!-- Buy Modal (for individual items) -->
+  <!-- Buy Modal -->
   <div class="modal fade" id="buyModal" tabindex="-1" aria-labelledby="buyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="buyModalLabel">🛒 Complete Your Purchase</h5>
@@ -219,46 +262,72 @@
         </div>
         <div class="modal-body">
           <form id="buyForm">
-            <input type="hidden" id="buyItemIndex" value="">
             <input type="hidden" id="buyMode" value="single">
 
-            <div class="mb-3">
-              <label for="customerName" class="form-label">👤 Your Name <span class="text-danger">*</span></label>
-              <input type="text" id="customerName" class="form-control" placeholder="Enter your full name" required>
-            </div>
-            <div class="mb-3">
-              <label for="customerEmail" class="form-label">📧 Email Address <span class="text-danger">*</span></label>
-              <input type="email" id="customerEmail" class="form-control" placeholder="you@example.com" required>
+            <!-- Customer Details -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="customerName" class="form-label">👤 Your Name <span class="text-danger">*</span></label>
+                <input type="text" id="customerName" class="form-control" placeholder="Enter your full name" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="customerEmail" class="form-label">📧 Email Address <span class="text-danger">*</span></label>
+                <input type="email" id="customerEmail" class="form-control" placeholder="you@example.com" required>
+              </div>
             </div>
             <div class="mb-3">
               <label for="customerPhone" class="form-label">📱 Phone Number <span class="text-danger">*</span></label>
               <input type="tel" id="customerPhone" class="form-control" placeholder="+267 78 549 270" required>
             </div>
+
             <hr>
-            <div class="mb-3">
-              <label for="buyColor" class="form-label">🎨 Color <span class="text-danger">*</span></label>
-              <select id="buyColor" class="form-select" required>
-                <option value="">Select color...</option>
-                <option value="Red">Red</option>
-                <option value="Black">Black</option>
-                <option value="Blue">Blue</option>
-                <option value="Pink">Pink</option>
-                <option value="White">White</option>
-                <option value="Yellow">Yellow</option>
-                <option value="Green">Green</option>
-                <option value="Gray">Gray</option>
-              </select>
+
+            <!-- Items List (for bulk) -->
+            <div id="bulkItemsSection" style="display: none;">
+              <label class="form-label fw-bold">📦 Items in this order:</label>
+              <div class="bulk-items-list" id="bulkItemsList"></div>
+              <p class="fw-bold text-success mt-2">Total: P<span id="bulkTotalPrice">0.00</span></p>
+              <hr>
             </div>
-            <div class="mb-3">
-              <label for="buySize" class="form-label">📏 Size <span class="text-danger">*</span></label>
-              <select id="buySize" class="form-select" required>
-                <option value="">Select size...</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
+
+            <!-- Single Item Info (for single buy) -->
+            <div id="singleItemSection">
+              <div class="mb-3">
+                <label class="form-label fw-bold">📦 Item:</label>
+                <p class="bg-light p-2 rounded" id="singleItemName">-</p>
+              </div>
             </div>
+
+            <!-- Color & Size - only shown for single item -->
+            <div id="colorSizeSection">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="buyColor" class="form-label">🎨 Color <span class="text-danger">*</span></label>
+                  <select id="buyColor" class="form-select" required>
+                    <option value="">Select color...</option>
+                    <option value="Red">Red</option>
+                    <option value="Black">Black</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Pink">Pink</option>
+                    <option value="White">White</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Green">Green</option>
+                    <option value="Gray">Gray</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="buySize" class="form-label">📏 Size <span class="text-danger">*</span></label>
+                  <select id="buySize" class="form-select" required>
+                    <option value="">Select size...</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div class="mb-3">
               <label for="buyService" class="form-label">📬 Service Method <span class="text-danger">*</span></label>
               <select id="buyService" class="form-select" required>
@@ -268,11 +337,8 @@
                 <option value="Express">⚡ Express Delivery</option>
               </select>
             </div>
-            <div id="bulkItemsList" class="mb-3" style="display: none;">
-              <label class="form-label fw-bold">📦 Items in this order:</label>
-              <ul id="bulkItemsUl" class="list-unstyled small"></ul>
-              <p class="fw-bold text-success">Total: P<span id="bulkTotalPrice">0.00</span></p>
-            </div>
+
+            <input type="hidden" id="buyItemIndex" value="">
           </form>
         </div>
         <div class="modal-footer">
@@ -466,11 +532,15 @@
       currentBuyIndex = index;
       currentBulkIndices = [];
       document.getElementById('buyMode').value = 'single';
-      document.getElementById('bulkItemsList').style.display = 'none';
+      document.getElementById('bulkItemsSection').style.display = 'none';
+      document.getElementById('singleItemSection').style.display = 'block';
+      document.getElementById('colorSizeSection').style.display = 'block';
 
       const item = cart[index];
       document.getElementById('buyItemIndex').value = index;
+      document.getElementById('singleItemName').textContent = `${item.name} - P${item.price} (${item.selectedColor || 'N/A'}, ${item.selectedSize || 'N/A'})`;
 
+      // Pre-fill color and size with original values
       const colorSelect = document.getElementById('buyColor');
       const sizeSelect = document.getElementById('buySize');
 
@@ -505,17 +575,20 @@
       currentBuyIndex = -1;
       document.getElementById('buyMode').value = 'bulk';
       document.getElementById('buyItemIndex').value = '';
-      document.getElementById('bulkItemsList').style.display = 'block';
+      document.getElementById('bulkItemsSection').style.display = 'block';
+      document.getElementById('singleItemSection').style.display = 'none';
+      document.getElementById('colorSizeSection').style.display = 'none'; // Hide color/size for bulk
 
-      // Build items list
-      const ul = document.getElementById('bulkItemsUl');
-      ul.innerHTML = '';
+      // Build items list with original colors and sizes
+      const list = document.getElementById('bulkItemsList');
+      list.innerHTML = '';
       let total = 0;
       indices.forEach(idx => {
         const item = cart[idx];
-        const li = document.createElement('li');
-        li.textContent = `📦 ${item.name} - P${item.price} (${item.selectedColor || 'N/A'}, ${item.selectedSize || 'N/A'})`;
-        ul.appendChild(li);
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.textContent = `📦 ${item.name} - P${item.price} (${item.selectedColor || 'N/A'}, ${item.selectedSize || 'N/A'})`;
+        list.appendChild(div);
         total += item.price;
       });
       document.getElementById('bulkTotalPrice').textContent = total.toFixed(2);
@@ -524,8 +597,6 @@
       document.getElementById('customerName').value = '';
       document.getElementById('customerEmail').value = '';
       document.getElementById('customerPhone').value = '';
-      document.getElementById('buyColor').value = '';
-      document.getElementById('buySize').value = '';
       document.getElementById('buyService').value = '';
 
       if (!buyModalInstance) {
@@ -542,8 +613,6 @@
       const customerName = document.getElementById('customerName').value.trim();
       const customerEmail = document.getElementById('customerEmail').value.trim();
       const customerPhone = document.getElementById('customerPhone').value.trim();
-      const color = document.getElementById('buyColor').value;
-      const size = document.getElementById('buySize').value;
       const service = document.getElementById('buyService').value;
 
       // Validate customer details
@@ -570,14 +639,18 @@
         let orders = [];
 
         if (mode === 'single' && currentBuyIndex >= 0) {
-          // Single item
-          const item = cart[currentBuyIndex];
+          // Single item - use selected color/size from dropdown
+          const color = document.getElementById('buyColor').value;
+          const size = document.getElementById('buySize').value;
+          
           if (!color || !size) {
             showToast('⚠️ Please select color and size.');
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = '✅ Place Order';
             return;
           }
+
+          const item = cart[currentBuyIndex];
           orders.push({
             customer_name: customerName,
             customer_email: customerEmail,
@@ -591,13 +664,7 @@
             ordered_at: new Date().toISOString()
           });
         } else if (mode === 'bulk' && currentBulkIndices.length > 0) {
-          // Bulk items - use same color/size for all (or you can customize per item)
-          if (!color || !size) {
-            showToast('⚠️ Please select color and size for all items.');
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '✅ Place Order';
-            return;
-          }
+          // Bulk items - use original colors and sizes from cart
           currentBulkIndices.forEach(idx => {
             const item = cart[idx];
             orders.push({
@@ -606,8 +673,8 @@
               customer_phone: customerPhone,
               product_name: item.name,
               price: item.price,
-              color: color,
-              size: size,
+              color: item.selectedColor || 'N/A',
+              size: item.selectedSize || 'N/A',
               service_method: service,
               status: 'pending',
               ordered_at: new Date().toISOString()
