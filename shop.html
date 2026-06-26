@@ -12,6 +12,7 @@
   <style>
     body {
       background: #f4f6fa;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     }
     .card-img-top {
       height: 220px;
@@ -52,9 +53,34 @@
     }
     .card {
       height: 100%;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
     }
     .card-body {
       flex: 1 1 auto;
+    }
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #25D366;
+      box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -78,14 +104,19 @@
           <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
           <li class="nav-item"><a class="nav-link" href="feedback.html">Feedback</a></li>
         </ul>
-        <button id="toggleCart" class="btn btn-success ms-3" onclick="window.location.href='cart.html'">🛒 Cart (0)</button>
+        <button id="toggleCart" class="btn btn-success ms-3" onclick="window.location.href='cart.html'">
+          <i class="fas fa-shopping-cart me-1"></i> Cart (<span id="cartCount">0</span>)
+        </button>
       </div>
     </div>
   </nav>
 
   <!-- SHOP GRID -->
   <div class="container my-4">
-    <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3><i class="fas fa-tshirt me-2"></i>Our Collection</h3>
+      <span class="badge bg-secondary"><i class="fas fa-box me-1"></i> <span id="productCount">0</span> products</span>
+    </div>
     <div id="shop" class="row"></div>
   </div>
 
@@ -94,38 +125,42 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><i class="fas fa-shopping-bag me-2"></i>Buy Now</h5>
+          <h5 class="modal-title"><i class="fas fa-shopping-bag me-2"></i>Place Order</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div id="buyNowProductInfo" class="fw-bold mb-3 p-2 bg-light rounded">Product: </div>
-          <form id="buyNowForm">
+          <div id="buyNowProductInfo" class="fw-bold mb-3 p-3 bg-light rounded">
+            <i class="fas fa-tag me-2"></i> Product: <span id="productNameDisplay"></span> — P<span id="productPriceDisplay"></span>
+          </div>
+          <form id="buyNowForm" onsubmit="return false;">
             <div class="mb-3">
-              <label for="customerName" class="form-label">Your Name</label>
-              <input type="text" id="customerName" class="form-control" placeholder="Enter your name" required>
+              <label for="customerName" class="form-label fw-semibold">Your Name <span class="text-danger">*</span></label>
+              <input type="text" id="customerName" class="form-control" placeholder="Enter your full name" required>
             </div>
             <div class="mb-3">
-              <label for="customerEmail" class="form-label">Your Email</label>
+              <label for="customerEmail" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
               <input type="email" id="customerEmail" class="form-control" placeholder="you@example.com" required>
+              <div class="form-text">We'll send order confirmation here.</div>
             </div>
             <div class="mb-3">
-              <label for="customerPhone" class="form-label">Phone Number</label>
+              <label for="customerPhone" class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
               <input type="tel" id="customerPhone" class="form-control" placeholder="+267 78 549 270" required>
             </div>
+            <hr>
             <div class="mb-3">
-              <label for="buyColor" class="form-label">Color</label>
+              <label for="buyColor" class="form-label fw-semibold">Color <span class="text-danger">*</span></label>
               <select id="buyColor" class="form-select" required>
                 <option value="">Select color...</option>
               </select>
             </div>
             <div class="mb-3">
-              <label for="buySize" class="form-label">Size</label>
+              <label for="buySize" class="form-label fw-semibold">Size <span class="text-danger">*</span></label>
               <select id="buySize" class="form-select" required>
                 <option value="">Select size...</option>
               </select>
             </div>
             <div class="mb-3">
-              <label for="buyService" class="form-label">Service Method</label>
+              <label for="buyService" class="form-label fw-semibold">Service Method <span class="text-danger">*</span></label>
               <select id="buyService" class="form-select" required>
                 <option value="">Choose service...</option>
                 <option value="Delivery">🚚 Delivery</option>
@@ -138,51 +173,52 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="confirmBuyBtn" class="btn btn-success"><i class="fas fa-check-circle me-1"></i>Place Order</button>
+          <button type="button" id="confirmBuyBtn" class="btn btn-success" onclick="confirmBuy()">
+            <i class="fas fa-check-circle me-1"></i> Place Order
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TOAST -->
+  <!-- ORDER CONFIRMATION TOAST -->
   <div class="toast-container">
-    <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div id="orderToast" class="toast align-items-center text-white border-0" role="alert" style="background: #1e293b;">
       <div class="d-flex">
-        <div class="toast-body" id="toastMessage">✅ Order placed!</div>
+        <div class="toast-body" id="toastMessage">
+          <i class="fas fa-check-circle text-success me-2"></i> Order placed successfully!
+        </div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
       </div>
     </div>
   </div>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
 
-  <!-- ========== SUPABASE + EMAILJS ========== -->
-  <script type="module">
+  <!-- ========================================== -->
+  <!-- SUPABASE + EMAILJS - SIMPLE JAVASCRIPT     -->
+  <!-- ========================================== -->
+  <script>
     // ============================================================
     //  🔧  SUPABASE CONFIGURATION
     // ============================================================
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
-
-    const SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
-    const ORDERS_TABLE = 'shop_orders';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
+    var ORDERS_TABLE = 'shop_orders';
 
     // ============================================================
     //  🔧  EMAILJS CONFIGURATION
     // ============================================================
-    emailjs.init('p1SkBpAIthT5H_oqV');
-
-    const EMAILJS_SERVICE_ID = 'service_0hxmvck';
-    const EMAILJS_TEMPLATE_ID = 'template_us3d5rc';
+    var EMAILJS_PUBLIC_KEY = 'p1SkBpAIthT5H_oqV';
+    var EMAILJS_SERVICE_ID = 'service_0hxmvck';
+    var EMAILJS_TEMPLATE_ID = 'template_us3d5rc';
 
     // ============================================================
     //  📦  PRODUCT DATA
     // ============================================================
-    const products = [
+    var products = [
       { id: 1, name: "Evening dress", price: 1000, image: "gown.jpg", colors: ["Red", "Black", "Blue"], sizes: ["S", "M", "L"] },
       { id: 2, name: "Vintage dress", price: 230, image: "dress.jpg", colors: ["Pink", "White"], sizes: ["M", "L"] },
       { id: 3, name: "Lady shorts", price: 100, image: "lady shorts.jpg", colors: ["Yellow", "Green"], sizes: ["S", "M"] },
@@ -196,42 +232,69 @@
     // ============================================================
     //  🛒  CART FUNCTIONS
     // ============================================================
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    var cart = JSON.parse(localStorage.getItem("cart")) || [];
 
     function updateCartButton() {
-      document.getElementById("toggleCart").innerHTML = `🛒 Cart (${cart.length})`;
+      var count = cart.length;
+      document.getElementById('cartCount').textContent = count;
     }
 
-    function showToast(msg) {
-      const toastEl = document.getElementById('orderToast');
-      document.getElementById('toastMessage').textContent = msg;
-      const toast = new bootstrap.Toast(toastEl, { delay: 2800 });
+    function showToast(msg, isError) {
+      var toastEl = document.getElementById('orderToast');
+      var toastBody = document.getElementById('toastMessage');
+      toastBody.innerHTML = msg;
+      toastEl.style.background = isError ? '#dc3545' : '#1e293b';
+      var toast = new bootstrap.Toast(toastEl, { delay: 3500 });
       toast.show();
     }
 
     function addToCart(id) {
-      const product = products.find(p => p.id === id);
-      const color = document.getElementById(`color-${id}`).value;
-      const size = document.getElementById(`size-${id}`).value;
-      
+      var product = null;
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id === id) {
+          product = products[i];
+          break;
+        }
+      }
+      if (!product) return;
+
+      var color = document.getElementById('color-' + id).value;
+      var size = document.getElementById('size-' + id).value;
+
       if (!color || !size) {
-        showToast('⚠️ Please select a color and size first.');
+        showToast('⚠️ Please select a color and size first.', true);
         return;
       }
-      
-      cart.push({ ...product, selectedColor: color, selectedSize: size, cartId: Date.now() + Math.random() });
+
+      var cartItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        colors: product.colors,
+        sizes: product.sizes,
+        selectedColor: color,
+        selectedSize: size,
+        cartId: Date.now() + Math.random()
+      };
+      cart.push(cartItem);
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartButton();
-      showToast(`🛒 "${product.name}" added to cart!`);
+      showToast('🛒 "' + product.name + '" added to cart!');
     }
 
     // ============================================================
     //  📧  SEND ORDER NOTIFICATION VIA EMAILJS
     // ============================================================
-    async function sendOrderNotification(orderData) {
-      try {
-        const orderDate = new Date(orderData.ordered_at);
-        const formattedDate = orderDate.toLocaleDateString('en-BW', {
+    function sendOrderNotification(orderData) {
+      // Load EmailJS
+      var script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+      script.onload = function() {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+
+        var orderDate = new Date(orderData.ordered_at);
+        var formattedDate = orderDate.toLocaleDateString('en-BW', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
@@ -239,7 +302,7 @@
           minute: '2-digit'
         });
 
-        const templateParams = {
+        var templateParams = {
           order_id: orderData.id,
           customer_name: orderData.customer_name,
           customer_email: orderData.customer_email,
@@ -256,138 +319,158 @@
           store_website: window.location.origin
         };
 
-        console.log('📧 Sending email with params:', templateParams);
-
-        const response = await emailjs.send(
-          EMAILJS_SERVICE_ID,
-          EMAILJS_TEMPLATE_ID,
-          templateParams
-        );
-
-        console.log('✅ Order notification sent!', response);
-        return { success: true, response };
-
-      } catch (error) {
-        console.error('❌ Error sending notification:', error);
-        return { success: false, error };
-      }
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+          .then(function(response) {
+            console.log('✅ Order notification sent!', response);
+          })
+          .catch(function(error) {
+            console.error('❌ Error sending notification:', error);
+          });
+      };
+      document.head.appendChild(script);
     }
 
     // ============================================================
     //  📥  SAVE ORDER TO SUPABASE
     // ============================================================
-    async function saveOrderToSupabase(orderData) {
-      try {
-        const { data, error } = await supabase
-          .from(ORDERS_TABLE)
-          .insert([orderData])
-          .select();
+    function saveOrderToSupabase(orderData, callback) {
+      var url = SUPABASE_URL + '/rest/v1/' + ORDERS_TABLE;
 
-        if (error) throw error;
-        return { success: true, data };
-      } catch (error) {
-        console.error('❌ Supabase insert failed:', error);
-        return { success: false, error };
-      }
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+      xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+      xhr.setRequestHeader('Prefer', 'return=representation');
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 201) {
+            var data = JSON.parse(xhr.responseText);
+            callback({ success: true, data: data });
+          } else {
+            console.error('Supabase error:', xhr.status, xhr.responseText);
+            callback({ success: false, error: xhr.responseText });
+          }
+        }
+      };
+
+      xhr.send(JSON.stringify(orderData));
     }
 
     // ============================================================
     //  🛍️  CONFIRM BUY - PLACE ORDER
     // ============================================================
-    async function confirmBuy() {
-      const productId = document.getElementById('buyProductId').value;
-      const product = products.find(p => p.id == productId);
-      if (!product) { showToast('❌ Product not found.'); return; }
-
-      const customerName = document.getElementById('customerName').value.trim();
-      const customerEmail = document.getElementById('customerEmail').value.trim();
-      const customerPhone = document.getElementById('customerPhone').value.trim();
-      const color = document.getElementById('buyColor').value;
-      const size = document.getElementById('buySize').value;
-      const service = document.getElementById('buyService').value;
-
-      if (!customerName || !customerEmail || !customerPhone) {
-        showToast('⚠️ Please enter your contact details.');
+    function confirmBuy() {
+      var productId = document.getElementById('buyProductId').value;
+      var product = null;
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id == productId) {
+          product = products[i];
+          break;
+        }
+      }
+      if (!product) {
+        showToast('❌ Product not found.', true);
         return;
       }
 
-      if (!customerEmail.includes('@')) {
-        showToast('⚠️ Please enter a valid email address.');
+      var customerName = document.getElementById('customerName').value.trim();
+      var customerEmail = document.getElementById('customerEmail').value.trim();
+      var customerPhone = document.getElementById('customerPhone').value.trim();
+      var color = document.getElementById('buyColor').value;
+      var size = document.getElementById('buySize').value;
+      var service = document.getElementById('buyService').value;
+
+      // Validate
+      if (!customerName || !customerEmail || !customerPhone) {
+        showToast('⚠️ Please enter your contact details.', true);
+        return;
+      }
+
+      if (customerEmail.indexOf('@') === -1) {
+        showToast('⚠️ Please enter a valid email address.', true);
         return;
       }
 
       if (!color || !size || !service) {
-        showToast('⚠️ Please select color, size and service.');
+        showToast('⚠️ Please select color, size and service.', true);
         return;
       }
 
-      const confirmBtn = document.getElementById('confirmBuyBtn');
+      var confirmBtn = document.getElementById('confirmBuyBtn');
       confirmBtn.disabled = true;
-      confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing order...';
+      confirmBtn.innerHTML = '<span class="loading-spinner"></span> Placing order...';
 
-      try {
-        const orderPayload = {
-          customer_name: customerName,
-          customer_email: customerEmail,
-          customer_phone: customerPhone,
-          product_name: product.name,
-          price: product.price,
-          color: color,
-          size: size,
-          service_method: service,
-          status: 'pending',
-          ordered_at: new Date().toISOString()
-        };
+      var orderPayload = {
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
+        product_name: product.name,
+        price: product.price,
+        color: color,
+        size: size,
+        service_method: service,
+        status: 'pending',
+        ordered_at: new Date().toISOString()
+      };
 
-        const result = await saveOrderToSupabase(orderPayload);
-
+      saveOrderToSupabase(orderPayload, function(result) {
         if (!result.success) {
-          showToast('❌ Failed to save order. Please try again.');
+          showToast('❌ Failed to save order. Please try again.', true);
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Place Order';
+          confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Place Order';
           return;
         }
 
-        const savedOrder = result.data[0];
+        var savedOrder = result.data[0];
         console.log('✅ Order saved to Supabase with ID:', savedOrder.id);
 
-        const emailResult = await sendOrderNotification(savedOrder);
+        // Send email notification
+        sendOrderNotification(savedOrder);
 
-        if (emailResult.success) {
-          showToast(`✅ Order placed for "${product.name}"! Check your email.`);
-        } else {
-          showToast(`✅ Order placed for "${product.name}"! We'll notify you when ready.`);
-        }
+        showToast('✅ Order placed for "' + product.name + '"! Check your email.');
 
-        const modal = bootstrap.Modal.getInstance(document.getElementById('buyNowModal'));
+        // Close modal
+        var modal = bootstrap.Modal.getInstance(document.getElementById('buyNowModal'));
         if (modal) modal.hide();
+
+        // Reset form
         document.getElementById('buyNowForm').reset();
 
-      } catch (error) {
-        console.error('Error placing order:', error);
-        showToast('❌ Error placing order. Please try again.');
-      } finally {
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i>Place Order';
-      }
+        confirmBtn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Place Order';
+      });
     }
 
     // ============================================================
     //  🛠️  PREPARE BUY NOW MODAL
     // ============================================================
     function prepareBuyNow(productId) {
-      const product = products.find(p => p.id === productId);
+      var product = null;
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id === productId) {
+          product = products[i];
+          break;
+        }
+      }
       if (!product) return;
-      document.getElementById('buyNowProductInfo').innerHTML = `📦 <strong>${product.name}</strong> — P${product.price}`;
+
+      document.getElementById('productNameDisplay').textContent = product.name;
+      document.getElementById('productPriceDisplay').textContent = product.price;
       document.getElementById('buyProductId').value = productId;
 
-      const colorSelect = document.getElementById('buyColor');
-      colorSelect.innerHTML = `<option value="">Select color...</option>`;
-      product.colors.forEach(c => colorSelect.innerHTML += `<option value="${c}">${c}</option>`);
+      var colorSelect = document.getElementById('buyColor');
+      colorSelect.innerHTML = '<option value="">Select color...</option>';
+      for (var c = 0; c < product.colors.length; c++) {
+        colorSelect.innerHTML += '<option value="' + product.colors[c] + '">' + product.colors[c] + '</option>';
+      }
 
-      const sizeSelect = document.getElementById('buySize');
-      sizeSelect.innerHTML = `<option value="">Select size...</option>`;
-      product.sizes.forEach(s => sizeSelect.innerHTML += `<option value="${s}">${s}</option>`);
+      var sizeSelect = document.getElementById('buySize');
+      sizeSelect.innerHTML = '<option value="">Select size...</option>';
+      for (var s = 0; s < product.sizes.length; s++) {
+        sizeSelect.innerHTML += '<option value="' + product.sizes[s] + '">' + product.sizes[s] + '</option>';
+      }
 
       document.getElementById('buyService').value = '';
     }
@@ -396,62 +479,73 @@
     //  🎨  RENDER PRODUCTS
     // ============================================================
     function renderProducts() {
-      const shop = document.getElementById('shop');
-      if (!shop) {
-        console.error('Shop element not found!');
-        return;
-      }
-      
+      var shop = document.getElementById('shop');
       shop.innerHTML = '';
-      
-      products.forEach(p => {
-        const colorOpts = p.colors.map(c => `<option value="${c}">${c}</option>`).join('');
-        const sizeOpts = p.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
-        const card = document.createElement('div');
+
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+
+        var colorOpts = '';
+        for (var c = 0; c < p.colors.length; c++) {
+          colorOpts += '<option value="' + p.colors[c] + '">' + p.colors[c] + '</option>';
+        }
+
+        var sizeOpts = '';
+        for (var s = 0; s < p.sizes.length; s++) {
+          sizeOpts += '<option value="' + p.sizes[s] + '">' + p.sizes[s] + '</option>';
+        }
+
+        var card = document.createElement('div');
         card.className = 'col-md-4 col-lg-3 mb-4';
         card.innerHTML = `
-          <div class="card shadow-sm h-100">
-            <img src="${p.image}" class="card-img-top" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">${p.name}</h5>
-              <p class="card-text">Price: P${p.price}</p>
-              <div class="mb-2">
-                <label class="form-label">Color</label>
-                <select id="color-${p.id}" class="form-select">${colorOpts}</select>
+              <div class="card shadow-sm h-100">
+                <img src="${p.image}" class="card-img-top" alt="${p.name}" 
+                     onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">${p.name}</h5>
+                  <p class="card-text fw-bold text-success">P${p.price.toFixed(2)}</p>
+                  <div class="mb-2">
+                    <label class="form-label small fw-semibold">Color</label>
+                    <select id="color-${p.id}" class="form-select form-select-sm">${colorOpts}</select>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label small fw-semibold">Size</label>
+                    <select id="size-${p.id}" class="form-select form-select-sm">${sizeOpts}</select>
+                  </div>
+                  <div class="mt-auto d-grid gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="addToCart(${p.id})">
+                      <i class="fas fa-cart-plus me-1"></i>Add to Cart
+                    </button>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#buyNowModal" 
+                            onclick="prepareBuyNow(${p.id})">
+                      <i class="fas fa-bolt me-1"></i>Buy Now
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="mb-2">
-                <label class="form-label">Size</label>
-                <select id="size-${p.id}" class="form-select">${sizeOpts}</select>
-              </div>
-              <div class="mt-auto d-grid gap-2">
-                <button class="btn btn-primary" onclick="window.addToCart(${p.id})"><i class="fas fa-cart-plus me-1"></i>Add to Cart</button>
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#buyNowModal" onclick="window.prepareBuyNow(${p.id})"><i class="fas fa-bolt me-1"></i>Buy Now</button>
-              </div>
-            </div>
-          </div>
-        `;
+            `;
         shop.appendChild(card);
-      });
-      
-      console.log(`✅ Rendered ${products.length} products`);
+      }
+
+      document.getElementById('productCount').textContent = products.length;
     }
 
     // ============================================================
-    //  🚀  INIT - Wait for DOM to be ready
+    //  🚀  INIT
     // ============================================================
     function init() {
       renderProducts();
       updateCartButton();
-      
-      document.getElementById('confirmBuyBtn').addEventListener('click', confirmBuy);
-      
-      // Expose functions to global scope
-      window.addToCart = addToCart;
-      window.prepareBuyNow = prepareBuyNow;
-      window.confirmBuy = confirmBuy;
-      window.showToast = showToast;
-      
-      console.log('✅ Shop page initialized!');
+
+      // Enter key support in modal
+      document.getElementById('buyNowForm').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          confirmBuy();
+        }
+      });
+
+      console.log('✅ Shop page loaded with ' + products.length + ' products');
     }
 
     // Run when DOM is ready
@@ -461,6 +555,8 @@
       init();
     }
   </script>
+
 </body>
+
 </html>
                                                                         
