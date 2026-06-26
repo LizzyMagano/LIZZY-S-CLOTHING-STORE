@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -137,6 +136,80 @@
       background: #1da851;
       color: white;
       transform: scale(1.03);
+    }
+
+    /* ========================================== */
+    /* FAQ SECTION */
+    /* ========================================== */
+    .faq-section {
+      margin-top: 1.5rem;
+    }
+
+    .faq-section .faq-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .faq-section .faq-title i {
+      color: #25D366;
+    }
+
+    .faq-item {
+      background: #f8fafc;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      border: 1px solid #eef2f7;
+      transition: all 0.2s ease;
+    }
+
+    .faq-item:hover {
+      border-color: #d0d9e6;
+    }
+
+    .faq-question {
+      padding: 14px 18px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+      color: #1e293b;
+      user-select: none;
+    }
+
+    .faq-question:hover {
+      color: #0b5ed7;
+    }
+
+    .faq-question .faq-toggle {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-question .faq-toggle {
+      transform: rotate(180deg);
+      color: #0b5ed7;
+    }
+
+    .faq-answer {
+      padding: 0 18px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .faq-item.active .faq-answer {
+      padding: 0 18px 16px 18px;
+      max-height: 500px;
     }
 
     /* ========================================== */
@@ -332,6 +405,13 @@
         height: 60px;
         font-size: 1.6rem;
       }
+      .faq-question {
+        font-size: 0.9rem;
+        padding: 12px 14px;
+      }
+      .faq-answer {
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
@@ -411,6 +491,79 @@
             </div>
             <div class="mt-2 small text-muted">
               <i class="fas fa-lock me-1"></i> Your conversations are private & secure
+            </div>
+          </div>
+
+          <!-- FAQ SECTION - Replaces Search Answers -->
+          <div class="faq-section">
+            <div class="faq-title">
+              <i class="fas fa-question-circle"></i> Frequently Asked Questions
+            </div>
+
+            <!-- FAQ Item 1 -->
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How do I track my order?</span>
+                <span class="faq-toggle"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="faq-answer">
+                Once your order is placed, you'll receive a confirmation email with a tracking number. You can also check your order status by visiting our <a href="#">Track Order</a> page or contacting our support team.
+              </div>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What payment methods do you accept?</span>
+                <span class="faq-toggle"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="faq-answer">
+                We accept all major credit/debit cards, mobile money (Orange Money, M-Pesa), and cash on delivery for local orders. All transactions are secure and encrypted.
+              </div>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>Do you offer international shipping?</span>
+                <span class="faq-toggle"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="faq-answer">
+                Currently, we ship within Botswana and select neighboring countries. For international orders, please contact us directly for a shipping quote. Delivery times may vary based on location.
+              </div>
+            </div>
+
+            <!-- FAQ Item 4 -->
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What is your return policy?</span>
+                <span class="faq-toggle"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="faq-answer">
+                We accept returns within 14 days of purchase. Items must be unworn, unwashed, and with original tags attached. Please visit our <a href="#">Returns Policy</a> page for full details.
+              </div>
+            </div>
+
+            <!-- FAQ Item 5 -->
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How can I change or cancel my order?</span>
+                <span class="faq-toggle"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="faq-answer">
+                You can request changes or cancellations within 1 hour of placing your order. Contact our support team immediately with your order number. Changes after processing may not be possible.
+              </div>
+            </div>
+
+            <!-- FAQ Item 6 -->
+            <div class="faq-item">
+              <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What sizes do you offer?</span>
+                <span class="faq-toggle"><i class="fas fa-chevron-down"></i></span>
+              </div>
+              <div class="faq-answer">
+                We offer sizes from S to XL. Some items may have extended sizing. Check each product page for specific size availability. Refer to our <a href="#">Size Guide</a> for measurements.
+              </div>
             </div>
           </div>
         </div>
@@ -554,14 +707,32 @@
     })();
 
     function showChatConnected() {
-      // Update the preview box
       const previewBox = document.getElementById('chatPreviewBox');
       previewBox.classList.add('chat-active');
-
-      // Show the floating chat bubble
       const bubble = document.getElementById('chatBubble');
       bubble.classList.add('active-bubble');
     }
+
+    // ========================================== //
+    // FAQ TOGGLE FUNCTION                        //
+    // ========================================== //
+    function toggleFaq(element) {
+      const faqItem = element.closest('.faq-item');
+      const isActive = faqItem.classList.contains('active');
+      
+      // Close all other FAQs
+      document.querySelectorAll('.faq-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Toggle the clicked one
+      if (!isActive) {
+        faqItem.classList.add('active');
+      }
+    }
+
+    // Expose toggleFaq globally
+    window.toggleFaq = toggleFaq;
   </script>
 
   <!-- ========================================== -->
@@ -584,20 +755,15 @@
     // Open fullscreen chat (from bubble)
     bubble.addEventListener('click', function() {
       openFullscreenChat();
-      // Hide notification badge when opened
       badge.style.display = 'none';
     });
 
     function openFullscreenChat() {
-      // Show overlay
       overlay.classList.add('active');
-
-      // Show connected state
       previewBox.classList.add('chat-active');
       bubble.classList.add('active-bubble');
       badge.style.display = 'none';
 
-      // Open Tawk.to
       setTimeout(function() {
         if (typeof Tawk_API !== 'undefined') {
           if (Tawk_API.toggle) Tawk_API.toggle();
@@ -649,13 +815,11 @@
         btn.classList.toggle('active-mode', btn.dataset.mode === mode);
       });
 
-      // Hide the chat bubble when switching to Email or Call
-      // The bubble should only show on the Chat tab
+      // Hide bubble when not on chat tab
       if (mode !== 'chat') {
         bubble.classList.remove('active-bubble');
         bubble.style.display = 'none';
       } else {
-        // If we're on the Chat tab and chat was previously connected, show the bubble
         if (previewBox.classList.contains('chat-active')) {
           bubble.style.display = 'flex';
           bubble.classList.add('active-bubble');
@@ -698,8 +862,4 @@
 
 </body>
 
-  </html>
-
-
-
-
+            </html>
