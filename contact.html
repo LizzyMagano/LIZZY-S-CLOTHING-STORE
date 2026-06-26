@@ -4,13 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Chat · Lizzy's Clothing</title>
-  <!-- Bootstrap + Font Awesome -->
+  <title>Contact · Lizzy's Clothing Store</title>
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- EmailJS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
-  </script>
   <style>
     body {
       background: #f4f6fa;
@@ -35,91 +33,6 @@
       font-weight: 600;
       letter-spacing: -0.3px;
       font-size: 1.9rem;
-    }
-    .chat-messages {
-      background: #f2f4f8;
-      border-radius: 20px;
-      padding: 18px 16px;
-      height: 280px;
-      overflow-y: auto;
-      border: 1px solid #e6eaef;
-      scroll-behavior: smooth;
-    }
-    .chat-message {
-      padding: 10px 18px;
-      border-radius: 24px;
-      max-width: 80%;
-      word-wrap: break-word;
-      font-size: 0.95rem;
-      line-height: 1.45;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    }
-    .chat-message.sent {
-      background: #0b5ed7;
-      color: white;
-      margin-left: auto;
-      border-bottom-right-radius: 4px;
-    }
-    .chat-message.received {
-      background: #ffffff;
-      color: #1e1e1e;
-      margin-right: auto;
-      border-bottom-left-radius: 4px;
-      border: 1px solid #e0e5ec;
-    }
-    .chat-message.system {
-      background: #e9ecf3;
-      color: #2c3e50;
-      margin: 0 auto 12px auto;
-      text-align: center;
-      font-size: 0.82rem;
-      border-radius: 40px;
-      padding: 6px 18px;
-      max-width: 90%;
-      opacity: 0.8;
-    }
-    .chat-input-area {
-      background: white;
-      border-radius: 60px;
-      padding: 6px 6px 6px 20px;
-      border: 1px solid #d9e0e8;
-      margin-top: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .chat-input-area input {
-      border: none;
-      background: transparent;
-      padding: 12px 0;
-      font-size: 0.95rem;
-      flex: 1;
-      outline: none;
-    }
-    .chat-input-area input::placeholder {
-      color: #989fa8;
-    }
-    .btn-send {
-      background: #1f7b4d;
-      border: none;
-      color: white;
-      border-radius: 60px;
-      padding: 10px 22px;
-      font-weight: 500;
-      transition: 0.15s;
-      white-space: nowrap;
-    }
-    .btn-send:hover {
-      background: #14633d;
-      color: white;
-    }
-    .btn-send i {
-      margin-right: 6px;
-    }
-    .btn-send:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
     }
     .info-box {
       background: #f0f3f8;
@@ -153,33 +66,36 @@
     .mode-pill .btn-sm i {
       margin-right: 6px;
     }
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
+    .chat-preview-box {
+      background: #f2f4f8;
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      border: 2px dashed #d9e0e8;
+    }
+    .chat-preview-box i {
+      font-size: 3rem;
+      color: #25D366;
+      margin-bottom: 1rem;
+    }
+    .btn-live-chat {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      transition: 0.15s;
+    }
+    .btn-live-chat:hover {
+      background: #1da851;
+      color: white;
+      transform: scale(1.02);
     }
     .quick-footer {
       border-top: 1px solid #eef2f7;
       padding-top: 1.2rem;
       margin-top: 1.8rem;
-    }
-    .email-field {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-    .email-field.show {
-      display: block;
-    }
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-6px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
     @media (max-width: 576px) {
       .contact-card {
@@ -189,16 +105,13 @@
         margin: -1.2rem -1.2rem 1.5rem -1.2rem;
         padding: 1.2rem;
       }
-      .chat-message {
-        max-width: 92%;
-      }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Dark Navbar -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <a class="navbar-brand fw-bold" href="#">Lizzy's Clothing</a>
@@ -216,65 +129,58 @@
     </div>
   </nav>
 
-  <!-- Main -->
+  <!-- Main Contact Card -->
   <div class="container my-4 my-md-5">
     <div class="contact-card">
 
       <!-- Header -->
       <div class="contact-header d-flex align-items-center justify-content-between flex-wrap">
         <div>
-          <h1><i class="fas fa-comment-dots me-2"></i>Live Chat</h1>
-          <p class="mb-0 opacity-75" style="font-size: 0.95rem;">We reply via email within 24h</p>
+          <h1><i class="fas fa-comment-dots me-2"></i>Contact Us</h1>
+          <p class="mb-0 opacity-75" style="font-size: 0.95rem;">We're here to help! Choose how you'd like to connect</p>
         </div>
-        <span class="badge bg-success bg-opacity-25 text-light px-3 py-2 rounded-pill"><i class="fas fa-circle text-success me-1" style="font-size: 0.6rem;"></i> online</span>
+        <span class="badge bg-success bg-opacity-25 text-light px-3 py-2 rounded-pill">
+          <i class="fas fa-circle text-success me-1" style="font-size: 0.6rem;"></i> online
+        </span>
       </div>
 
-      <!-- Mode selector -->
+      <!-- Mode Selector -->
       <div class="d-flex align-items-center justify-content-between flex-wrap mb-4">
         <div class="mode-pill" id="modePill">
-          <button class="btn-sm active-mode" data-mode="chat"><i class="fas fa-comment-dots"></i> Chat</button>
+          <button class="btn-sm active-mode" data-mode="chat"><i class="fas fa-comment-dots"></i> Live Chat</button>
           <button class="btn-sm" data-mode="email"><i class="fas fa-envelope"></i> Email</button>
           <button class="btn-sm" data-mode="call"><i class="fas fa-phone-alt"></i> Call</button>
         </div>
-        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill" id="modeHint"><i class="far fa-clock me-1"></i> replies within 24h</span>
+        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill">
+          <i class="fas fa-clock me-1"></i> replies within 2 minutes
+        </span>
       </div>
 
-      <!-- Dynamic Panel -->
+      <!-- Contact Panels -->
       <div id="contactPanel">
 
-        <!-- CHAT PANEL (default) -->
+        <!-- LIVE CHAT Panel -->
         <div id="chatPanel">
-          <div class="chat-messages" id="chatMessages">
-            <div class="chat-message received"><i class="fas fa-robot me-1" style="opacity: 0.6;"></i> Hi! 👋 Welcome to Lizzy's. Ask us anything about sizes, orders, or style.</div>
-            <div class="chat-message system">💬 Please enter your name and email so we can reply to you.</div>
-          </div>
-
-          <!-- Name & Email fields (shown before first message) -->
-          <div class="email-field show" id="userInfoFields">
-            <div class="row g-2">
-              <div class="col-6">
-                <input type="text" id="userName" class="form-control form-control-sm" placeholder="Your name *" />
-              </div>
-              <div class="col-6">
-                <input type="email" id="userEmail" class="form-control form-control-sm" placeholder="Your email *" />
-              </div>
+          <div class="chat-preview-box">
+            <i class="fas fa-comment-dots"></i>
+            <h5 class="fw-bold">💬 Start a Live Chat</h5>
+            <p class="text-muted">Click the button below to chat with our team instantly</p>
+            <button class="btn-live-chat" id="startChatBtn">
+              <i class="fab fa-whatsapp me-2"></i>Start Live Chat
+            </button>
+            <div class="mt-3 small text-muted">
+              <i class="fas fa-check-circle text-success me-1"></i> Average response time: 2 minutes
             </div>
-          </div>
-
-          <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Type your message..." />
-            <button id="sendChatBtn" class="btn-send"><i class="fas fa-paper-plane"></i> Send</button>
-          </div>
-          <div class="d-flex justify-content-between mt-2 small text-secondary">
-            <span><i class="fas fa-lock me-1" style="opacity: 0.5;"></i> encrypted</span>
-            <span><i class="fas fa-envelope me-1"></i> replies sent to your email</span>
+            <div class="mt-2 small text-muted">
+              <i class="fas fa-lock me-1"></i> Your conversations are private & secure
+            </div>
           </div>
         </div>
 
-        <!-- EMAIL PANEL (hidden) -->
+        <!-- EMAIL Panel -->
         <div id="emailPanel" style="display: none;">
           <div class="info-box mb-3">
-            <i class="fas fa-envelope-open-text"></i> We'll reply within 24h
+            <i class="fas fa-envelope-open-text"></i> We'll reply within 24 hours
           </div>
           <form id="emailForm">
             <div class="row g-3">
@@ -297,10 +203,12 @@
             </div>
             <button type="submit" class="btn btn-primary mt-3 px-4"><i class="fas fa-paper-plane me-2"></i>Send email</button>
           </form>
-          <div class="mt-2 small text-secondary"><i class="fas fa-shield-alt me-1"></i> We treat your data with care.</div>
+          <div class="mt-2 small text-secondary">
+            <i class="fas fa-shield-alt me-1"></i> We treat your data with care
+          </div>
         </div>
 
-        <!-- CALL PANEL (hidden) -->
+        <!-- CALL Panel -->
         <div id="callPanel" style="display: none;">
           <div class="info-box mb-3">
             <i class="fas fa-phone-alt"></i> Speak to a human · Mon–Fri 9am–6pm CAT
@@ -312,12 +220,12 @@
             <a href="tel:+26778549270" class="btn btn-success btn-lg px-5"><i class="fas fa-phone me-2"></i>Call now</a>
           </div>
           <div class="mt-3 text-center small text-secondary">
-            <i class="fas fa-voicemail me-1"></i> If busy, leave a voicemail or send a WhatsApp.
+            <i class="fas fa-voicemail me-1"></i> If busy, leave a voicemail or send a WhatsApp
           </div>
         </div>
       </div>
 
-      <!-- Quick footer -->
+      <!-- Footer -->
       <div class="quick-footer d-flex justify-content-between flex-wrap small text-secondary">
         <span><i class="fas fa-store me-1"></i> Lizzy's Clothing</span>
         <span><i class="fas fa-envelope me-1"></i> maganolizzy79@gmail.com</span>
@@ -326,229 +234,99 @@
     </div>
   </div>
 
-  <!-- Toast -->
-  <div class="toast-container">
-    <div id="contactToast" class="toast align-items-center text-white bg-success border-0" role="alert">
-      <div class="d-flex">
-        <div class="toast-body" id="toastMessage">✅ Done!</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-      </div>
-    </div>
-  </div>
-
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
   </script>
 
-  <script>
+  <!-- ========================================== -->
+  <!-- YOUR Tawk.to LIVE CHAT CODE - DO NOT EDIT -->
+  <!-- ========================================== -->
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+      Tawk_LoadStart = new Date();
     (function() {
-      // ----- EMAILJS CONFIG -----
-      const SERVICE_ID = 'service_0hxmvck';
-      const TEMPLATE_ID = 'template_us3d5rc';
-      const PUBLIC_KEY = 'p1SkBpAIthT5H_oqV';
-
-      // Initialize EmailJS
-      emailjs.init(PUBLIC_KEY);
-
-      // ----- DOM REFS -----
-      const chatPanel = document.getElementById('chatPanel');
-      const emailPanel = document.getElementById('emailPanel');
-      const callPanel = document.getElementById('callPanel');
-      const chatMessages = document.getElementById('chatMessages');
-      const chatInput = document.getElementById('chatInput');
-      const sendBtn = document.getElementById('sendChatBtn');
-      const userName = document.getElementById('userName');
-      const userEmail = document.getElementById('userEmail');
-      const userInfoFields = document.getElementById('userInfoFields');
-      const emailForm = document.getElementById('emailForm');
-      const modeBtns = document.querySelectorAll('#modePill .btn-sm');
-      const modeHint = document.getElementById('modeHint');
-      const toastEl = document.getElementById('contactToast');
-      const toastMsg = document.getElementById('toastMessage');
-      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-
-      let isFirstMessage = true;
-
-      function showToast(msg) {
-        toastMsg.textContent = msg;
-        toast.show();
-      }
-
-      // Add message to chat
-      function addChatMessage(text, type) {
-        const div = document.createElement('div');
-        div.className = `chat-message ${type}`;
-        div.textContent = text;
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-
-      // Show typing indicator
-      function showTyping() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'chat-message received';
-        typingDiv.id = 'typingIndicator';
-        typingDiv.innerHTML = '<i class="fas fa-ellipsis-h me-1"></i> Agent is typing...';
-        chatMessages.appendChild(typingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-
-      function removeTyping() {
-        const typing = document.getElementById('typingIndicator');
-        if (typing) typing.remove();
-      }
-
-      // Send message via EmailJS
-      function sendMessageToEmail(name, email, message) {
-        const templateParams = {
-          from_name: name || 'Customer',
-          from_email: email || 'no-reply@example.com',
-          message: message,
-          subject: 'New chat message from Lizzy\'s Clothing'
-        };
-
-        return emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
-      }
-
-      // Handle chat send
-      function handleChatSend() {
-        const text = chatInput.value.trim();
-        if (!text) {
-          showToast('✏️ Please type a message.');
-          return;
-        }
-
-        const name = userName.value.trim();
-        const email = userEmail.value.trim();
-
-        if (isFirstMessage) {
-          if (!name || !email) {
-            showToast('⚠️ Please enter your name and email first.');
-            return;
-          }
-          // Hide the fields after first message
-          userInfoFields.classList.remove('show');
-          userInfoFields.style.display = 'none';
-          isFirstMessage = false;
-        }
-
-        // Add user message
-        addChatMessage(text, 'sent');
-
-        // Disable send button
-        sendBtn.disabled = true;
-        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-
-        // Show typing
-        showTyping();
-
-        // Send via EmailJS
-        sendMessageToEmail(name, email, text)
-          .then(() => {
-            removeTyping();
-            showToast('📤 Message sent! We\'ll reply via email.');
-            addChatMessage('Thank you for contacting Lizzy\'s Clothing Store. Please wait a minute. One of our agents will respond to you shortly.', 'received');
-            chatInput.value = '';
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
-          })
-          .catch((error) => {
-            removeTyping();
-            showToast('❌ Error sending message. Please try again.');
-            console.error('EmailJS error:', error);
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
-            // Show error in chat
-            addChatMessage('⚠️ Sorry, we couldn\'t send your message. Please try again or email us directly.', 'system');
-          });
-      }
-
-      // ----- EMAIL FORM (direct mailto fallback) -----
-      function handleEmailSubmit(e) {
-        e.preventDefault();
-        const name = document.getElementById('emailName').value.trim();
-        const email = document.getElementById('emailAddress').value.trim();
-        const subject = document.getElementById('emailSubject').value.trim() || 'Clothing inquiry';
-        const message = document.getElementById('emailMessage').value.trim();
-
-        if (!name || !email || !message) {
-          showToast('⚠️ Please fill all fields.');
-          return;
-        }
-
-        // Use EmailJS for direct email form too
-        const templateParams = {
-          from_name: name,
-          from_email: email,
-          message: message,
-          subject: subject
-        };
-
-        emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
-          .then(() => {
-            showToast('📧 Email sent! We\'ll reply within 24h.');
-            emailForm.reset();
-          })
-          .catch((error) => {
-            showToast('❌ Error sending email. Please try again.');
-            console.error('EmailJS error:', error);
-          });
-      }
-
-      // ----- SWITCH MODE -----
-      function switchMode(mode) {
-        chatPanel.style.display = 'none';
-        emailPanel.style.display = 'none';
-        callPanel.style.display = 'none';
-
-        if (mode === 'chat') {
-          chatPanel.style.display = 'block';
-          modeHint.innerHTML = '<i class="far fa-clock me-1"></i> replies within 24h via email';
-          chatInput.focus();
-        } else if (mode === 'email') {
-          emailPanel.style.display = 'block';
-          modeHint.innerHTML = '<i class="far fa-envelope me-1"></i> reply within 24h';
-          document.getElementById('emailName').focus();
-        } else if (mode === 'call') {
-          callPanel.style.display = 'block';
-          modeHint.innerHTML = '<i class="fas fa-phone me-1"></i> Mon–Fri 9am–6pm';
-        }
-
-        modeBtns.forEach(btn => {
-          btn.classList.toggle('active-mode', btn.dataset.mode === mode);
-        });
-      }
-
-      // ----- EVENT LISTENERS -----
-      modeBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          switchMode(this.dataset.mode);
-        });
-      });
-
-      sendBtn.addEventListener('click', handleChatSend);
-      chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleChatSend();
-        }
-      });
-
-      emailForm.addEventListener('submit', handleEmailSubmit);
-
-      // Init: chat mode
-      switchMode('chat');
-
-      // Focus on name field initially
-      userName.focus();
-
+      var s1 = document.createElement("script"),
+        s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = 'https://embed.tawk.to/6a3e44a6680a601d49f66eb1/1js1job27';
+      s1.charset = 'UTF-8';
+      s1.setAttribute('crossorigin', '*');
+      s0.parentNode.insertBefore(s1, s0);
     })();
+  </script>
+  <!--End of Tawk.to Script-->
+
+  <!-- ========================================== -->
+  <!-- BUTTON TO OPEN CHAT + MODE SWITCHING      -->
+  <!-- ========================================== -->
+  <script>
+    // Open Tawk.to chat when button is clicked
+    document.getElementById('startChatBtn').addEventListener('click', function() {
+      if (typeof Tawk_API !== 'undefined' && Tawk_API.toggle) {
+        Tawk_API.toggle();
+      } else {
+        alert('💬 Chat is loading. Please wait a moment and try again.');
+      }
+    });
+
+    // Mode switching (Live Chat / Email / Call)
+    const chatPanel = document.getElementById('chatPanel');
+    const emailPanel = document.getElementById('emailPanel');
+    const callPanel = document.getElementById('callPanel');
+    const modeBtns = document.querySelectorAll('#modePill .btn-sm');
+
+    function switchMode(mode) {
+      chatPanel.style.display = 'none';
+      emailPanel.style.display = 'none';
+      callPanel.style.display = 'none';
+
+      if (mode === 'chat') {
+        chatPanel.style.display = 'block';
+      } else if (mode === 'email') {
+        emailPanel.style.display = 'block';
+      } else if (mode === 'call') {
+        callPanel.style.display = 'block';
+      }
+
+      modeBtns.forEach(btn => {
+        btn.classList.toggle('active-mode', btn.dataset.mode === mode);
+      });
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchMode(this.dataset.mode);
+      });
+    });
+
+    // Init: chat mode
+    switchMode('chat');
+
+    // Handle email form submission (opens mail client)
+    document.getElementById('emailForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('emailName').value.trim();
+      const email = document.getElementById('emailAddress').value.trim();
+      const subject = document.getElementById('emailSubject').value.trim() || 'Clothing inquiry';
+      const message = document.getElementById('emailMessage').value.trim();
+
+      if (!name || !email || !message) {
+        alert('⚠️ Please fill in all fields.');
+        return;
+      }
+
+      const body = `Name: ${name}%0AEmail: ${email}%0A%0A${message}`;
+      window.location.href = `mailto:maganolizzy79@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      alert('📧 Email opened in your mail app!');
+      this.reset();
+    });
   </script>
 
 </body>
-
 </html>
+
 
 
 
