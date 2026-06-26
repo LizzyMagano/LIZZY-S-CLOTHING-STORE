@@ -56,15 +56,26 @@
     .modal-backdrop {
       z-index: 1040;
     }
-    .cart-item-checkbox {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      accent-color: #0d6efd;
+    .cart-item-card {
+      position: relative;
     }
-    .selected-count {
-      font-weight: 600;
-      color: #0d6efd;
+    .cart-item-card .checkbox-wrapper {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 5;
+      background: rgba(255,255,255,0.9);
+      padding: 4px 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: none;
+      /* Hidden by default */
+    }
+    .cart-item-card.show-checkbox .checkbox-wrapper {
+      display: block;
+    }
+    .card .card-body {
+      padding-top: 8px;
     }
     .bulk-actions {
       background: white;
@@ -72,11 +83,15 @@
       padding: 12px 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       margin-bottom: 20px;
-      display: flex;
+      display: none;
+      /* Hidden by default */
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 10px;
+    }
+    .bulk-actions.active {
+      display: flex;
     }
     .bulk-actions .left {
       display: flex;
@@ -101,6 +116,24 @@
       background: #1da851;
       color: white;
     }
+    .btn-select-mode {
+      background: #0d6efd;
+      border: none;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 60px;
+      font-weight: 500;
+    }
+    .btn-select-mode:hover {
+      background: #0b5ed7;
+      color: white;
+    }
+    .btn-select-mode.active {
+      background: #dc3545;
+    }
+    .btn-select-mode.active:hover {
+      background: #bb2d3b;
+    }
     .btn-select-all {
       background: #e9ecef;
       border: none;
@@ -112,36 +145,9 @@
     .btn-select-all:hover {
       background: #dee2e6;
     }
-    .cart-item-card {
-      position: relative;
-    }
-    .cart-item-card .checkbox-wrapper {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 5;
-      background: rgba(255,255,255,0.9);
-      padding: 4px 8px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .card .card-body {
-      padding-top: 8px;
-    }
-    .dropdown-select-all {
-      background: #e9ecef;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 60px;
-      font-weight: 500;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .dropdown-select-all:hover {
-      background: #dee2e6;
-    }
-    .dropdown-select-all:focus {
-      outline: none;
+    .selected-count {
+      font-weight: 600;
+      color: #0d6efd;
     }
     .bulk-items-list {
       max-height: 150px;
@@ -200,22 +206,12 @@
   <main class="container my-5">
     <h1 class="mb-4">🛍️ Your Clothing Collection</h1>
 
-    <!-- Bulk Actions Bar -->
-    <div id="bulkActions" class="bulk-actions" style="display: none;">
+    <!-- Bulk Actions Bar (hidden by default) -->
+    <div id="bulkActions" class="bulk-actions">
       <div class="left">
         <span>Select: </span>
-        
-        <!-- Select All Dropdown -->
-        <div class="dropdown">
-          <button class="dropdown-select-all" id="selectDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-check-double me-1"></i> Select
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="selectDropdown">
-            <li><a class="dropdown-item" href="#" onclick="selectAllItems()">✅ Select All</a></li>
-            <li><a class="dropdown-item" href="#" onclick="deselectAllItems()">❌ Deselect All</a></li>
-          </ul>
-        </div>
-
+        <button class="btn-select-all" onclick="selectAllItems()">✅ Select All</button>
+        <button class="btn-select-all" onclick="deselectAllItems()">❌ Deselect All</button>
         <span class="selected-count" id="selectedCount">0 selected</span>
       </div>
       <div class="right">
@@ -223,6 +219,13 @@
           <i class="fas fa-shopping-bag me-1"></i> Buy Selected (<span id="bulkCount">0</span>)
         </button>
       </div>
+    </div>
+
+    <!-- Select Mode Toggle Button -->
+    <div class="mb-3">
+      <button id="toggleSelectBtn" class="btn-select-mode" onclick="toggleSelectMode()">
+        <i class="fas fa-check-square me-1"></i> Select Items
+      </button>
     </div>
 
     <div id="cart-items" class="row g-4"></div>
@@ -242,7 +245,7 @@
 
   <!-- Toast container for messages -->
   <div class="toast-container">
-    <div id="orderToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="orderToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body" id="toastMessage">
           ✅ Order placed successfully!
@@ -290,7 +293,7 @@
               <hr>
             </div>
 
-            <!-- Single Item Info (for single buy) -->
+            <!-- Single Item Info -->
             <div id="singleItemSection">
               <div class="mb-3">
                 <label class="form-label fw-bold">📦 Item:</label>
@@ -298,7 +301,7 @@
               </div>
             </div>
 
-            <!-- Color & Size - only shown for single item -->
+            <!-- Color & Size -->
             <div id="colorSizeSection">
               <div class="row">
                 <div class="col-md-6 mb-3">
@@ -350,103 +353,191 @@
   </div>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
 
   <!-- Cart Logic with Supabase -->
-  <script type="module">
+  <script>
     // ============================================================
-    //  🔧  SUPABASE CONFIGURATION (same as shop.html)
+    //  🔧  SUPABASE CONFIGURATION
     // ============================================================
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    var SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
+    var ORDERS_TABLE = 'shop_orders';
 
-    const SUPABASE_URL = "https://wmebpsheblrkuvygguae.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_rUkBj0Th3x6ZXGbPkLGsHQ_f5WG3jB_";
-    const ORDERS_TABLE = 'shop_orders';
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // ============================================================
+    //  📦  PRODUCT DATA
+    // ============================================================
+    var products = [
+      { id: 1, name: "Evening dress", price: 1000, image: "gown.jpg", colors: ["Red", "Black", "Blue"], sizes: ["S", "M", "L"] },
+      { id: 2, name: "Vintage dress", price: 230, image: "dress.jpg", colors: ["Pink", "White"], sizes: ["M", "L"] },
+      { id: 3, name: "Lady shorts", price: 100, image: "lady shorts.jpg", colors: ["Yellow", "Green"], sizes: ["S", "M"] },
+      { id: 4, name: "Plain T-shirt", price: 80, image: "tshirt.jpg", colors: ["White", "Gray", "Black"], sizes: ["S", "M", "L", "XL"] },
+      { id: 5, name: "Vintage skirt", price: 500, image: "skirt.jpg", colors: ["Blue", "Black"], sizes: ["M", "L"] },
+      { id: 6, name: "Lady suit", price: 1200, image: "lady suit.jpg", colors: ["Blue", "Gray"], sizes: ["L", "XL"] },
+      { id: 7, name: "Men suits", price: 900, image: "men suit.jpg", colors: ["Black", "Gray"], sizes: ["M", "L", "XL"] },
+      { id: 8, name: "Men shorts", price: 300, image: "men shorts.jpg", colors: ["Black", "Blue"], sizes: ["S", "M", "L"] }
+    ];
 
-    // -------- GLOBAL HELPERS --------
-    function showToast(message) {
-      const toastEl = document.getElementById('orderToast');
-      const msgEl = document.getElementById('toastMessage');
+    // ============================================================
+    //  🛒  CART MANAGEMENT
+    // ============================================================
+    var cart = JSON.parse(localStorage.getItem("cart")) || [];
+    var selectModeActive = false;
+
+    function showToast(message, isError) {
+      var toastEl = document.getElementById('orderToast');
+      var msgEl = document.getElementById('toastMessage');
       msgEl.textContent = message;
-      const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+      toastEl.style.background = isError ? '#dc3545' : '#1e293b';
+      var toast = new bootstrap.Toast(toastEl, { delay: 4000 });
       toast.show();
     }
-
-    // -------- CART MANAGEMENT --------
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const cartItemsDiv = document.getElementById("cart-items");
-    const emptyCartDiv = document.getElementById("emptyCart");
-    const bulkActionsDiv = document.getElementById("bulkActions");
-    let selectedItems = [];
 
     function saveAndRender() {
       localStorage.setItem("cart", JSON.stringify(cart));
       renderCart();
     }
 
-    // ========== SUPABASE INSERT ==========
-    async function saveOrderToSupabase(orderData) {
-      const url = `${SUPABASE_URL}/rest/v1/${ORDERS_TABLE}`;
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify(orderData)
+    // ============================================================
+    //  🔄  TOGGLE SELECT MODE
+    // ============================================================
+    function toggleSelectMode() {
+      selectModeActive = !selectModeActive;
+      var btn = document.getElementById('toggleSelectBtn');
+      var bulkActions = document.getElementById('bulkActions');
+      var cards = document.querySelectorAll('.cart-item-card');
+
+      if (selectModeActive) {
+        btn.innerHTML = '<i class="fas fa-times me-1"></i> Cancel Select';
+        btn.classList.add('active');
+        bulkActions.classList.add('active');
+        // Show checkboxes
+        for (var i = 0; i < cards.length; i++) {
+          cards[i].classList.add('show-checkbox');
+        }
+        // Uncheck all when entering select mode
+        var checkboxes = document.querySelectorAll('.cart-item-checkbox');
+        for (var c = 0; c < checkboxes.length; c++) {
+          checkboxes[c].checked = false;
+        }
+        updateSelectedCount();
+      } else {
+        btn.innerHTML = '<i class="fas fa-check-square me-1"></i> Select Items';
+        btn.classList.remove('active');
+        bulkActions.classList.remove('active');
+        // Hide checkboxes
+        for (var i = 0; i < cards.length; i++) {
+          cards[i].classList.remove('show-checkbox');
+        }
+        // Uncheck all
+        var checkboxes = document.querySelectorAll('.cart-item-checkbox');
+        for (var c = 0; c < checkboxes.length; c++) {
+          checkboxes[c].checked = false;
+        }
+        updateSelectedCount();
+      }
+    }
+
+    // ============================================================
+    //  🔄  SAVE ORDER TO SUPABASE
+    // ============================================================
+    function saveOrderToSupabase(orderData, callback) {
+      var url = SUPABASE_URL + '/rest/v1/' + ORDERS_TABLE;
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+      xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+      xhr.setRequestHeader('Prefer', 'return=representation');
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200 || xhr.status === 201) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              callback({ success: true, data: data });
+            } catch (e) {
+              if (xhr.responseText === '[]' || xhr.responseText === '') {
+                callback({ success: true, data: [orderData] });
+              } else {
+                callback({ success: false, error: 'Invalid response format' });
+              }
+            }
+          } else {
+            var errorMsg = 'Status ' + xhr.status + ': ' + xhr.responseText;
+            console.error('❌ Supabase error:', errorMsg);
+            callback({ success: false, error: errorMsg });
+          }
+        }
+      };
+
+      xhr.onerror = function() {
+        console.error('❌ Network error');
+        callback({ success: false, error: 'Network error' });
+      };
+
+      xhr.send(JSON.stringify(orderData));
+    }
+
+    // ============================================================
+    //  📦  SAVE MULTIPLE ORDERS
+    // ============================================================
+    function saveMultipleOrdersToSupabase(orders, callback) {
+      var results = [];
+      var completed = 0;
+      var successCount = 0;
+
+      if (orders.length === 0) {
+        callback({ success: true, data: [] });
+        return;
+      }
+
+      orders.forEach(function(order, index) {
+        saveOrderToSupabase(order, function(result) {
+          results[index] = result;
+          if (result.success) successCount++;
+          completed++;
+
+          if (completed === orders.length) {
+            callback({ success: successCount > 0, data: results, successCount: successCount });
+          }
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Supabase error ${response.status}: ${errorText}`);
-        }
-        return await response.json();
-      } catch (err) {
-        console.error('Supabase insert failed:', err);
-        throw err;
-      }
+      });
     }
 
-    // ========== SAVE MULTIPLE ORDERS ==========
-    async function saveMultipleOrdersToSupabase(orders) {
-      const results = [];
-      for (const order of orders) {
-        try {
-          const result = await saveOrderToSupabase(order);
-          results.push({ success: true, data: result });
-        } catch (err) {
-          results.push({ success: false, error: err });
-        }
-      }
-      return results;
-    }
-
-    // -------- RENDER CART --------
+    // ============================================================
+    //  🎨  RENDER CART
+    // ============================================================
     function renderCart() {
+      var cartItemsDiv = document.getElementById('cart-items');
+      var emptyCartDiv = document.getElementById('emptyCart');
       cartItemsDiv.innerHTML = '';
 
       if (cart.length === 0) {
         emptyCartDiv.style.display = 'block';
-        bulkActionsDiv.style.display = 'none';
+        // Hide bulk actions
+        document.getElementById('bulkActions').classList.remove('active');
+        document.getElementById('toggleSelectBtn').style.display = 'none';
         return;
       }
 
+      document.getElementById('toggleSelectBtn').style.display = 'inline-block';
       emptyCartDiv.style.display = 'none';
-      bulkActionsDiv.style.display = 'flex';
-      selectedItems = [];
 
-      cart.forEach((item, index) => {
-        const card = document.createElement("div");
-        card.className = "col-md-4 mb-4 cart-item-card";
-        card.dataset.index = index;
+      for (var i = 0; i < cart.length; i++) {
+        var item = cart[i];
+        var card = document.createElement('div');
+        card.className = 'col-md-4 mb-4 cart-item-card';
+        card.dataset.index = i;
+        // If select mode was active, show checkboxes
+        if (selectModeActive) {
+          card.classList.add('show-checkbox');
+        }
         card.innerHTML = `
           <div class="card shadow-sm h-100">
             <div class="checkbox-wrapper">
-              <input type="checkbox" class="cart-item-checkbox" data-index="${index}" onchange="updateSelectedCount()">
+              <input type="checkbox" class="cart-item-checkbox" data-index="${i}" onchange="updateSelectedCount()">
             </div>
             <img src="${item.image || 'https://via.placeholder.com/300x220?text=No+Image'}" class="card-img-top" alt="${item.name || 'Item'}" onerror="this.src='https://via.placeholder.com/300x220?text=No+Image'">
             <div class="card-body">
@@ -456,77 +547,91 @@
               <p class="card-text">Size: ${item.selectedSize || 'N/A'}</p>
             </div>
             <div class="card-footer d-flex justify-content-between align-items-center action-buttons">
-              <button class="btn btn-remove btn-sm" data-index="${index}">🗑️ Remove</button>
-              <button class="btn btn-buy btn-sm buy-now-btn" data-index="${index}">🛒 Buy Now</button>
+              <button class="btn btn-remove btn-sm" data-index="${i}">🗑️ Remove</button>
+              <button class="btn btn-buy btn-sm buy-now-btn" data-index="${i}">🛒 Buy Now</button>
             </div>
           </div>
         `;
         cartItemsDiv.appendChild(card);
-      });
+      }
 
       // Attach remove event listeners
-      document.querySelectorAll('.btn-remove').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          const idx = parseInt(this.getAttribute('data-index'), 10);
+      var removeBtns = document.querySelectorAll('.btn-remove');
+      for (var r = 0; r < removeBtns.length; r++) {
+        removeBtns[r].addEventListener('click', function(e) {
+          var idx = parseInt(this.getAttribute('data-index'), 10);
           if (!isNaN(idx) && idx >= 0 && idx < cart.length) {
             cart.splice(idx, 1);
             saveAndRender();
             showToast('🗑️ Item removed from cart');
           }
         });
-      });
+      }
 
       // Attach buy event listeners
-      document.querySelectorAll('.buy-now-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          const idx = parseInt(this.getAttribute('data-index'), 10);
+      var buyBtns = document.querySelectorAll('.buy-now-btn');
+      for (var b = 0; b < buyBtns.length; b++) {
+        buyBtns[b].addEventListener('click', function(e) {
+          var idx = parseInt(this.getAttribute('data-index'), 10);
           if (!isNaN(idx) && idx >= 0 && idx < cart.length) {
             openBuyModal(idx);
           }
         });
-      });
+      }
 
       updateSelectedCount();
     }
 
-    // -------- SELECTION FUNCTIONS --------
-    window.selectAllItems = function() {
-      document.querySelectorAll('.cart-item-checkbox').forEach(cb => cb.checked = true);
+    // ============================================================
+    //  🛠️  SELECTION FUNCTIONS
+    // ============================================================
+    function selectAllItems() {
+      var checkboxes = document.querySelectorAll('.cart-item-checkbox');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = true;
+      }
       updateSelectedCount();
-    };
+    }
 
-    window.deselectAllItems = function() {
-      document.querySelectorAll('.cart-item-checkbox').forEach(cb => cb.checked = false);
+    function deselectAllItems() {
+      var checkboxes = document.querySelectorAll('.cart-item-checkbox');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+      }
       updateSelectedCount();
-    };
+    }
 
-    window.updateSelectedCount = function() {
-      const checkboxes = document.querySelectorAll('.cart-item-checkbox');
-      const checked = document.querySelectorAll('.cart-item-checkbox:checked');
-      document.getElementById('selectedCount').textContent = checked.length + ' selected';
-      document.getElementById('bulkCount').textContent = checked.length;
-    };
+    function updateSelectedCount() {
+      var checked = document.querySelectorAll('.cart-item-checkbox:checked');
+      var count = checked.length;
+      document.getElementById('selectedCount').textContent = count + ' selected';
+      document.getElementById('bulkCount').textContent = count;
+    }
 
-    // -------- BULK BUY --------
-    window.bulkBuy = function() {
-      const checkedBoxes = document.querySelectorAll('.cart-item-checkbox:checked');
+    // ============================================================
+    //  🛍️  BULK BUY
+    // ============================================================
+    function bulkBuy() {
+      var checkedBoxes = document.querySelectorAll('.cart-item-checkbox:checked');
       if (checkedBoxes.length === 0) {
-        showToast('⚠️ Please select at least one item to buy.');
+        showToast('⚠️ Please select at least one item to buy.', true);
         return;
       }
 
-      const selectedIndices = [];
-      checkedBoxes.forEach(cb => {
-        selectedIndices.push(parseInt(cb.dataset.index, 10));
-      });
+      var selectedIndices = [];
+      for (var i = 0; i < checkedBoxes.length; i++) {
+        selectedIndices.push(parseInt(checkedBoxes[i].dataset.index, 10));
+      }
 
       openBulkBuyModal(selectedIndices);
-    };
+    }
 
-    // -------- BUY MODAL LOGIC --------
-    let buyModalInstance = null;
-    let currentBuyIndex = -1;
-    let currentBulkIndices = [];
+    // ============================================================
+    //  📦  BUY MODAL
+    // ============================================================
+    var buyModalInstance = null;
+    var currentBuyIndex = -1;
+    var currentBulkIndices = [];
 
     function openBuyModal(index) {
       currentBuyIndex = index;
@@ -536,35 +641,43 @@
       document.getElementById('singleItemSection').style.display = 'block';
       document.getElementById('colorSizeSection').style.display = 'block';
 
-      const item = cart[index];
+      var item = cart[index];
       document.getElementById('buyItemIndex').value = index;
-      document.getElementById('singleItemName').textContent = `${item.name} - P${item.price} (${item.selectedColor || 'N/A'}, ${item.selectedSize || 'N/A'})`;
+      document.getElementById('singleItemName').textContent = item.name + ' - P' + item.price + ' (' + (item.selectedColor || 'N/A') + ', ' + (item.selectedSize || 'N/A') + ')';
 
-      // Pre-fill color and size with original values
-      const colorSelect = document.getElementById('buyColor');
-      const sizeSelect = document.getElementById('buySize');
+      var colorSelect = document.getElementById('buyColor');
+      var sizeSelect = document.getElementById('buySize');
 
       colorSelect.value = '';
       sizeSelect.value = '';
 
       if (item.selectedColor) {
-        const colorOption = Array.from(colorSelect.options).find(opt => opt.value === item.selectedColor);
-        if (colorOption) colorSelect.value = item.selectedColor;
+        var colorOptions = colorSelect.options;
+        for (var c = 0; c < colorOptions.length; c++) {
+          if (colorOptions[c].value === item.selectedColor) {
+            colorSelect.value = item.selectedColor;
+            break;
+          }
+        }
       }
 
       if (item.selectedSize) {
-        const sizeOption = Array.from(sizeSelect.options).find(opt => opt.value === item.selectedSize);
-        if (sizeOption) sizeSelect.value = item.selectedSize;
+        var sizeOptions = sizeSelect.options;
+        for (var s = 0; s < sizeOptions.length; s++) {
+          if (sizeOptions[s].value === item.selectedSize) {
+            sizeSelect.value = item.selectedSize;
+            break;
+          }
+        }
       }
 
-      // Clear customer fields
       document.getElementById('customerName').value = '';
       document.getElementById('customerEmail').value = '';
       document.getElementById('customerPhone').value = '';
       document.getElementById('buyService').value = '';
 
       if (!buyModalInstance) {
-        const modalEl = document.getElementById('buyModal');
+        var modalEl = document.getElementById('buyModal');
         buyModalInstance = new bootstrap.Modal(modalEl);
       }
       buyModalInstance.show();
@@ -577,172 +690,186 @@
       document.getElementById('buyItemIndex').value = '';
       document.getElementById('bulkItemsSection').style.display = 'block';
       document.getElementById('singleItemSection').style.display = 'none';
-      document.getElementById('colorSizeSection').style.display = 'none'; // Hide color/size for bulk
+      document.getElementById('colorSizeSection').style.display = 'none';
 
-      // Build items list with original colors and sizes
-      const list = document.getElementById('bulkItemsList');
+      var list = document.getElementById('bulkItemsList');
       list.innerHTML = '';
-      let total = 0;
-      indices.forEach(idx => {
-        const item = cart[idx];
-        const div = document.createElement('div');
+      var total = 0;
+      for (var i = 0; i < indices.length; i++) {
+        var item = cart[indices[i]];
+        var div = document.createElement('div');
         div.className = 'item-row';
-        div.textContent = `📦 ${item.name} - P${item.price} (${item.selectedColor || 'N/A'}, ${item.selectedSize || 'N/A'})`;
+        div.textContent = '📦 ' + item.name + ' - P' + item.price + ' (' + (item.selectedColor || 'N/A') + ', ' + (item.selectedSize || 'N/A') + ')';
         list.appendChild(div);
         total += item.price;
-      });
+      }
       document.getElementById('bulkTotalPrice').textContent = total.toFixed(2);
 
-      // Clear fields
       document.getElementById('customerName').value = '';
       document.getElementById('customerEmail').value = '';
       document.getElementById('customerPhone').value = '';
       document.getElementById('buyService').value = '';
 
       if (!buyModalInstance) {
-        const modalEl = document.getElementById('buyModal');
+        var modalEl = document.getElementById('buyModal');
         buyModalInstance = new bootstrap.Modal(modalEl);
       }
       buyModalInstance.show();
     }
 
-    // -------- CONFIRM BUY --------
-    document.getElementById('confirmBuyBtn').addEventListener('click', async function() {
-      const mode = document.getElementById('buyMode').value;
+    // ============================================================
+    //  ✅  CONFIRM BUY
+    // ============================================================
+    document.getElementById('confirmBuyBtn').addEventListener('click', function() {
+      var mode = document.getElementById('buyMode').value;
 
-      const customerName = document.getElementById('customerName').value.trim();
-      const customerEmail = document.getElementById('customerEmail').value.trim();
-      const customerPhone = document.getElementById('customerPhone').value.trim();
-      const service = document.getElementById('buyService').value;
+      var customerName = document.getElementById('customerName').value.trim();
+      var customerEmail = document.getElementById('customerEmail').value.trim();
+      var customerPhone = document.getElementById('customerPhone').value.trim();
+      var service = document.getElementById('buyService').value;
 
-      // Validate customer details
       if (!customerName || !customerEmail || !customerPhone) {
-        showToast('⚠️ Please enter your contact details.');
+        showToast('⚠️ Please enter your contact details.', true);
         return;
       }
 
-      if (!customerEmail.includes('@')) {
-        showToast('⚠️ Please enter a valid email address.');
+      if (customerEmail.indexOf('@') === -1 || customerEmail.indexOf('.') === -1) {
+        showToast('⚠️ Please enter a valid email address.', true);
         return;
       }
 
       if (!service) {
-        showToast('⚠️ Please select a service method.');
+        showToast('⚠️ Please select a service method.', true);
         return;
       }
 
-      const confirmBtn = document.getElementById('confirmBuyBtn');
+      var confirmBtn = document.getElementById('confirmBuyBtn');
       confirmBtn.disabled = true;
       confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Placing order...';
 
-      try {
-        let orders = [];
+      var orders = [];
 
-        if (mode === 'single' && currentBuyIndex >= 0) {
-          // Single item - use selected color/size from dropdown
-          const color = document.getElementById('buyColor').value;
-          const size = document.getElementById('buySize').value;
-          
-          if (!color || !size) {
-            showToast('⚠️ Please select color and size.');
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = '✅ Place Order';
-            return;
-          }
+      if (mode === 'single' && currentBuyIndex >= 0) {
+        var color = document.getElementById('buyColor').value;
+        var size = document.getElementById('buySize').value;
 
-          const item = cart[currentBuyIndex];
+        if (!color || !size) {
+          showToast('⚠️ Please select color and size.', true);
+          confirmBtn.disabled = false;
+          confirmBtn.innerHTML = '✅ Place Order';
+          return;
+        }
+
+        var item = cart[currentBuyIndex];
+        orders.push({
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+          product_name: item.name,
+          price: item.price,
+          color: color,
+          size: size,
+          service_method: service,
+          status: 'pending',
+          ordered_at: new Date().toISOString()
+        });
+      } else if (mode === 'bulk' && currentBulkIndices.length > 0) {
+        for (var i = 0; i < currentBulkIndices.length; i++) {
+          var item = cart[currentBulkIndices[i]];
           orders.push({
             customer_name: customerName,
             customer_email: customerEmail,
             customer_phone: customerPhone,
             product_name: item.name,
             price: item.price,
-            color: color,
-            size: size,
+            color: item.selectedColor || 'N/A',
+            size: item.selectedSize || 'N/A',
             service_method: service,
             status: 'pending',
             ordered_at: new Date().toISOString()
           });
-        } else if (mode === 'bulk' && currentBulkIndices.length > 0) {
-          // Bulk items - use original colors and sizes from cart
-          currentBulkIndices.forEach(idx => {
-            const item = cart[idx];
-            orders.push({
-              customer_name: customerName,
-              customer_email: customerEmail,
-              customer_phone: customerPhone,
-              product_name: item.name,
-              price: item.price,
-              color: item.selectedColor || 'N/A',
-              size: item.selectedSize || 'N/A',
-              service_method: service,
-              status: 'pending',
-              ordered_at: new Date().toISOString()
-            });
-          });
-        } else {
-          showToast('❌ Error: No items selected.');
-          confirmBtn.disabled = false;
-          confirmBtn.innerHTML = '✅ Place Order';
-          return;
         }
+      } else {
+        showToast('❌ Error: No items selected.', true);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '✅ Place Order';
+        return;
+      }
 
-        // Save all orders to Supabase
-        const results = await saveMultipleOrdersToSupabase(orders);
-        const successCount = results.filter(r => r.success).length;
+      saveMultipleOrdersToSupabase(orders, function(result) {
+        console.log('📥 Save result:', result);
 
-        if (successCount > 0) {
-          // Remove purchased items from cart
-          let indicesToRemove = [];
+        if (result.success) {
+          var indicesToRemove = [];
           if (mode === 'single' && currentBuyIndex >= 0) {
             indicesToRemove.push(currentBuyIndex);
           } else if (mode === 'bulk') {
-            indicesToRemove = currentBulkIndices.sort((a, b) => b - a);
+            indicesToRemove = currentBulkIndices.slice().sort(function(a, b) { return b - a; });
           }
 
-          // Remove from cart (highest index first)
-          indicesToRemove.forEach(idx => {
-            cart.splice(idx, 1);
-          });
+          for (var r = 0; r < indicesToRemove.length; r++) {
+            cart.splice(indicesToRemove[r], 1);
+          }
 
           saveAndRender();
-          showToast(`✅ ${successCount} order(s) placed successfully! Check your email.`);
+          showToast('✅ ' + result.successCount + ' order(s) placed successfully! Check your email.');
+
+          // Exit select mode after buying
+          if (selectModeActive) {
+            toggleSelectMode();
+          }
 
           if (buyModalInstance) {
             buyModalInstance.hide();
           }
         } else {
-          showToast('❌ Failed to place orders. Please try again.');
+          if (result.successCount > 0) {
+            showToast('⚠️ ' + result.successCount + ' order(s) placed, but some failed.');
+          } else {
+            showToast('❌ Failed to place orders. Please try again.', true);
+          }
         }
 
-      } catch (err) {
-        console.error('Order error:', err);
-        showToast('❌ Error placing order. Please try again.');
-      } finally {
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '✅ Place Order';
-      }
+      });
     });
 
-    // Close modal on cancel
-    document.querySelector('#buyModal .btn-secondary').addEventListener('click', function() {
-      if (buyModalInstance) {
-        buyModalInstance.hide();
-      }
-    });
+    // ============================================================
+    //  🚀  INIT
+    // ============================================================
+    function init() {
+      renderCart();
 
-    document.querySelector('#buyModal .btn-close').addEventListener('click', function() {
-      if (buyModalInstance) {
-        buyModalInstance.hide();
-      }
-    });
+      document.querySelector('#buyModal .btn-secondary').addEventListener('click', function() {
+        if (buyModalInstance) {
+          buyModalInstance.hide();
+        }
+      });
 
-    // -------- INITIAL RENDER --------
-    renderCart();
+      document.querySelector('#buyModal .btn-close').addEventListener('click', function() {
+        if (buyModalInstance) {
+          buyModalInstance.hide();
+        }
+      });
+
+      console.log('✅ Cart page loaded with ' + cart.length + ' items');
+    }
 
     // Expose functions globally
-    window.showToast = showToast;
+    window.toggleSelectMode = toggleSelectMode;
+    window.selectAllItems = selectAllItems;
+    window.deselectAllItems = deselectAllItems;
     window.updateSelectedCount = updateSelectedCount;
+    window.bulkBuy = bulkBuy;
+    window.openBuyModal = openBuyModal;
+    window.openBulkBuyModal = openBulkBuyModal;
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 
 </body>
